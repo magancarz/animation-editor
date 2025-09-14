@@ -22,8 +22,27 @@
 
 #pragma once
 
-class FABRIKSolver
+#include "InverseKinematics/Chain.h"
+#include "InverseKinematics/Effector.h"
+
+namespace chs::ik
 {
-public:
-    void sayHello() const;
-};
+    class FABRIKSolver
+    {
+    public:
+        explicit FABRIKSolver(int num_of_iterations = 1);
+
+        FABRIKSolver(const FABRIKSolver&) = default;
+        FABRIKSolver& operator=(const FABRIKSolver&) = default;
+        FABRIKSolver(FABRIKSolver&&) noexcept = default;
+        FABRIKSolver& operator=(FABRIKSolver&&) noexcept = default;
+    
+        void solve(Chain& chain, const Effector& effector) const;
+
+    private:
+        int num_of_iterations{1};
+
+        [[nodiscard]] bool effectorFartherThanChainLength(const Chain& chain, const Effector& effector) const;
+        void performChainStraightening(Chain& chain, const Effector& effector) const;
+    };
+}

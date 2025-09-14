@@ -24,7 +24,49 @@
 
 #include <iostream>
 
-void FABRIKSolver::sayHello() const
+namespace chs::ik
 {
-    printf("Hello world!\n");
+    FABRIKSolver::FABRIKSolver(int num_of_iterations)
+        : num_of_iterations{num_of_iterations} {}
+
+    void FABRIKSolver::solve(Chain& chain, const Effector& effector) const
+    {
+        if (chain.empty())
+        {
+            return;
+        }
+        
+        if (effectorFartherThanChainLength(chain, effector))
+        {
+            performChainStraightening(chain, effector);
+            return;
+        }
+
+        // TODO: implement FABRIK
+    }
+
+    bool FABRIKSolver::effectorFartherThanChainLength(const Chain& chain, const Effector& effector) const
+    {
+        const Segment& first_segment = chain.first();
+        const float distance_from_origin_to_effector = glm::distance(first_segment.worldOrigin(), effector.world_location);
+        const float chain_total_length = chain.calculateTotalLength();
+        return chain_total_length <= distance_from_origin_to_effector;
+    }
+
+    void FABRIKSolver::performChainStraightening(Chain& chain, const Effector& effector) const
+    {
+        const Segment& first_segment = chain.first();
+        const glm::vec3 to_effector = glm::normalize(effector.world_location - first_segment.worldOrigin());
+
+        glm::vec3 previous_segment_world_end = first_segment.worldOrigin();
+        for (auto& segment : chain.segments())
+        {
+            const float segment_length = segment.length();
+            segment.setWorldOrigin(previous_segment_world_end);
+
+            const glm::vec3 segment_new_world_end = segment.worldOrigin() + to_effector * segment_length;
+            segment.setWorldEnd(segment_new_world_end);
+            previous_segment_world_end = segment_new_world_end;
+        }
+    }
 }

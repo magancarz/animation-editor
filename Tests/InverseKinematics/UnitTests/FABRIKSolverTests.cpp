@@ -22,11 +22,45 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
+
 #include "InverseKinematics/FABRIKSolver.h"
 
-TEST(DummyTest, ShouldSayHello)
+TEST(FABRIKSolverTests, ShouldReturnEarlyWhenTheChainIsEmpty)
 {
-    FABRIKSolver fabrik_solver{};
-    fabrik_solver.sayHello();
-    EXPECT_TRUE(true);
+    // given
+    chs::ik::FABRIKSolver fabrik_solver{};
+
+    chs::ik::Chain chain{};
+    chs::ik::Effector effector;
+
+    // when
+    fabrik_solver.solve(chain, effector);
+}
+
+TEST(FABRIKSolverTests, ShouldPerformChainStraighteningWhenTheEffectorIsTooFar)
+{
+    // given
+    chs::ik::FABRIKSolver fabrik_solver{};
+
+    chs::ik::Chain chain{};
+    chain.addSegment(chs::ik::Segment{glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{1.0f, 0.0f, 0.0f}});
+    chain.addSegment(chs::ik::Segment{glm::vec3{1.0f, 0.0f, 0.0f}, glm::vec3{2.0f, 0.0f, 0.0f}});
+    chain.addSegment(chs::ik::Segment{glm::vec3{2.0f, 0.0f, 0.0f}, glm::vec3{3.0f, 0.0f, 0.0f}});
+
+    chs::ik::Effector effector{};
+    effector.world_location = glm::vec3{3.0f, 3.0f, 0.0f};
+
+    // when
+    fabrik_solver.solve(chain, effector);
+
+    // then
+    glm::vec3 chain_direction = glm::normalize(effector.world_location);
+
+    chs::ik::Chain expected_chain{};
+    expected_chain.addSegment(chs::ik::Segment{chain_direction * 0.0f, chain_direction * 1.0f});
+    expected_chain.addSegment(chs::ik::Segment{chain_direction * 1.0f, chain_direction * 2.0f});
+    expected_chain.addSegment(chs::ik::Segment{chain_direction * 2.0f, chain_direction * 3.0f});
+
+    EXPECT_TRUE(TestUtils::equal(chain, expected_chain));
 }
