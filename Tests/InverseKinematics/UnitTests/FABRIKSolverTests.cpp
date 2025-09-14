@@ -64,3 +64,29 @@ TEST(FABRIKSolverTests, ShouldPerformChainStraighteningWhenTheEffectorIsTooFar)
 
     EXPECT_TRUE(TestUtils::equal(chain, expected_chain));
 }
+
+TEST(FABRIKSolverTests, ShouldApplyFABRIKOnGivenChain)
+{
+    // given
+    const int num_of_iterations = 5;
+    chs::ik::FABRIKSolver fabrik_solver{num_of_iterations};
+
+    chs::ik::Chain chain{};
+    chain.addSegment(chs::ik::Segment{glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{1.0f, 0.0f, 0.0f}});
+    chain.addSegment(chs::ik::Segment{glm::vec3{1.0f, 0.0f, 0.0f}, glm::vec3{2.0f, 0.0f, 0.0f}});
+    chain.addSegment(chs::ik::Segment{glm::vec3{2.0f, 0.0f, 0.0f}, glm::vec3{3.0f, 0.0f, 0.0f}});
+
+    chs::ik::Effector effector{};
+    effector.world_location = glm::vec3{1.0f, 1.0f, 0.0f};
+
+    // when
+    fabrik_solver.solve(chain, effector);
+
+    // then
+    chs::ik::Chain expected_chain{};
+    expected_chain.addSegment(chs::ik::Segment{glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.991437f, -0.13059f, 0.0f}});
+    expected_chain.addSegment(chs::ik::Segment{glm::vec3{0.991437f, -0.13059f, 0.0f}, glm::vec3{1.820574f, 0.428456f, 0.0f}});
+    expected_chain.addSegment(chs::ik::Segment{glm::vec3{1.820574f, 0.428456f, 0.0f}, glm::vec3{1.0f, 1.0f, 0.0f}});
+
+    EXPECT_TRUE(TestUtils::equal(chain, expected_chain));
+}

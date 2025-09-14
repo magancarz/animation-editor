@@ -23,6 +23,7 @@
 #include "InverseKinematics/FABRIKSolver.h"
 
 #include <iostream>
+#include <ranges>
 
 namespace chs::ik
 {
@@ -42,7 +43,7 @@ namespace chs::ik
             return;
         }
 
-        // TODO: implement FABRIK
+        performFABRIKIterations(chain, effector);
     }
 
     bool FABRIKSolver::effectorFartherThanChainLength(const Chain& chain, const Effector& effector) const
@@ -67,6 +68,53 @@ namespace chs::ik
             const glm::vec3 segment_new_world_end = segment.worldOrigin() + to_effector * segment_length;
             segment.setWorldEnd(segment_new_world_end);
             previous_segment_world_end = segment_new_world_end;
+        }
+    }
+
+    void FABRIKSolver::performFABRIKIterations(Chain& chain, const Effector& effector) const
+    {
+        Effector chain_origin = createEffectorFromChainOrigin(chain);
+
+        for (int iteration = 0; iteration < num_of_iterations; ++iteration)
+        {
+            performForwardReachingPass(chain, effector);
+            performBackwardReachingPass(chain, chain_origin);
+        }
+    }
+
+    Effector FABRIKSolver::createEffectorFromChainOrigin(const Chain& chain) const
+    {
+        Effector chain_origin_effector{};
+        chain_origin_effector.world_location = chain.first().worldOrigin();
+
+        return chain_origin_effector;
+    }
+
+    void FABRIKSolver::performForwardReachingPass(Chain& chain, const Effector& effector) const
+    {
+        glm::vec3 previous_segment_origin = effector.world_location;
+        for (auto& segment : std::views::reverse(chain.segments()))
+        {
+            const float current_segment_length = segment.length();
+            const glm::vec3 to_origin_direction = glm::normalize(segment.worldOrigin() - previous_segment_origin);
+            const glm::vec3 current_segment_new_origin = previous_segment_origin + to_origin_direction * current_segment_length;
+            segment.setWorldOrigin(current_segment_new_origin);
+            segment.setWorldEnd(previous_segment_origin);
+            previous_segment_origin = current_segment_new_origin;
+        }
+    }
+
+    void FABRIKSolver::performBackwardReachingPass(Chain& chain, const Effector& effector) const
+    {
+        glm::vec3 previous_segment_end = effector.world_location;
+        for (auto& segment : chain.segments())
+        {
+            const float current_segment_length = segment.length();
+            const glm::vec3 to_end_direction = glm::normalize(segment.worldEnd() - previous_segment_end);
+            const glm::vec3 current_segment_new_end = previous_segment_end + to_end_direction * current_segment_length;
+            segment.setWorldOrigin(previous_segment_end);
+            segment.setWorldEnd(current_segment_new_end);
+            previous_segment_end = current_segment_new_end;
         }
     }
 }

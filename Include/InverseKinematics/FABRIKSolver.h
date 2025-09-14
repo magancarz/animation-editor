@@ -44,5 +44,9 @@ namespace chs::ik
 
         [[nodiscard]] bool effectorFartherThanChainLength(const Chain& chain, const Effector& effector) const;
         void performChainStraightening(Chain& chain, const Effector& effector) const;
+        void performFABRIKIterations(Chain& chain, const Effector& effector) const;
+        Effector createEffectorFromChainOrigin(const Chain& chain) const;
+        void performForwardReachingPass(Chain& chain, const Effector& effector) const;
+        void performBackwardReachingPass(Chain& chain, const Effector& effector) const;
     };
 }
