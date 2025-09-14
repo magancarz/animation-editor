@@ -30,6 +30,7 @@ if(BUILD_TESTING)
 	target_link_libraries(chaos-inverse-kinematics-tests chaos-inverse-kinematics)
 	target_link_libraries(chaos-inverse-kinematics-tests GTest::gtest_main)
 	target_link_libraries(chaos-inverse-kinematics-tests GTest::gmock)
+	target_include_directories(chaos-inverse-kinematics-tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/InverseKinematics)
 
 	add_test(NAME chaos-inverse-kinematics-tests-all COMMAND chaos-inverse-kinematics-tests)
 endif()
