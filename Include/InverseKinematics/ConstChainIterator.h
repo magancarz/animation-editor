@@ -23,30 +23,24 @@
 #pragma once
 
 #include "InverseKinematics/Chain.h"
-#include "InverseKinematics/Effector.h"
 
 namespace chs::ik
 {
-    class FABRIKSolver
+    class ConstChainIterator
     {
     public:
-        explicit FABRIKSolver(int num_of_iterations = 1);
+        explicit ConstChainIterator(const Chain& chain);
 
-        FABRIKSolver(const FABRIKSolver&) = default;
-        FABRIKSolver& operator=(const FABRIKSolver&) = default;
-        FABRIKSolver(FABRIKSolver&&) noexcept = default;
-        FABRIKSolver& operator=(FABRIKSolver&&) noexcept = default;
+        ConstChainIterator(const ConstChainIterator&) = default;
+        ConstChainIterator& operator=(const ConstChainIterator&) = default;
+        ConstChainIterator(ConstChainIterator&&) noexcept = default;
+        ConstChainIterator& operator=(ConstChainIterator&&) noexcept = default;
     
-        void solve(Chain& chain, const Effector& effector) const;
+        [[nodiscard]] bool hasNext() const;
+        [[nodiscard]] const Segment& next();
 
     private:
-        int num_of_iterations{1};
-
-        [[nodiscard]] bool effectorFartherThanChainLength(const Chain& chain, const Effector& effector) const;
-        void performChainStraightening(Chain& chain, const Effector& effector) const;
-        void performFABRIKIterations(Chain& chain, const Effector& effector) const;
-        [[nodiscard]] Effector createEffectorFromChainOrigin(const Chain& chain) const;
-        void performForwardReachingPass(Chain& chain, const Effector& effector) const;
-        void performBackwardReachingPass(Chain& chain, const Effector& effector) const;
+        const Chain* source_chain;
+        const Segment* current_segment{nullptr};
     };
 }

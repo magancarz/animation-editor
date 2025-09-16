@@ -26,19 +26,65 @@
 
 namespace chs::ik
 {
-    float Chain::calculateTotalLength() const
+    Chain::Chain(std::unique_ptr<Segment> chain_root)
+        : chain_root{std::move(chain_root)} {}
+
+    float Chain::length() const
     {
-        float total_length = 0.0f;
-        for (const auto& segment : chain_segments)
+        if (!chain_root)
         {
-            total_length += segment.length();
+            return 0.0f;
+        }
+
+        float total_length = chain_root->length();
+        Segment* current_segment = chain_root.get();
+        while (current_segment->hasChild())
+        {
+            Segment* next_segment = &current_segment->child();
+            total_length += next_segment->length();
+            current_segment = next_segment;
         }
 
         return total_length;
     }
 
-    void Chain::addSegment(Segment segment)
+    Segment& Chain::first()
     {
-        chain_segments.emplace_back(std::move(segment));
+        return firstImpl();
+    }
+
+    Segment& Chain::firstImpl() const
+    {
+        assert(chain_root && "Cannot call 'first' while the chain is empty!");
+        return *chain_root;
+    }
+
+    const Segment& Chain::first() const
+    {
+        return firstImpl();
+    }
+
+    Segment& Chain::last()
+    {
+        return lastImpl();
+    }
+
+    Segment& Chain::lastImpl() const
+    {
+        assert(chain_root && "Cannot call 'last' while the chain is empty!");
+
+        Segment* current_segment = chain_root.get();
+        while (current_segment->hasChild())
+        {
+            Segment* next_segment = &current_segment->child();
+            current_segment = next_segment;
+        }
+
+        return *current_segment;
+    }
+
+    const Segment& Chain::last() const
+    {
+        return lastImpl();
     }
 }

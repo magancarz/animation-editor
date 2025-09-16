@@ -22,39 +22,46 @@
 
 #include "TestUtils.h"
 
-bool TestUtils::equal(const chs::ik::Chain& first, const chs::ik::Chain& second, float precision)
+#include <gtest/gtest.h>
+#include <glm/gtx/quaternion.hpp>
+
+#include "InverseKinematics/ConstChainIterator.h"
+
+glm::mat4 TestUtils::fromVector(const glm::vec3& vector)
 {
-    if (first.size() != second.size())
+    glm::mat4 rotation = glm::toMat4(glm::quat{glm::vec3{0, 1, 0}, glm::normalize(vector)});
+    glm::mat4 translation = glm::translate(glm::mat4{1.0f}, vector);
+    return translation * rotation;
+}
+
+void TestUtils::expectEqual(const chs::ik::Chain& first, const chs::ik::Chain& second, float precision)
+{
+    chs::ik::ConstChainIterator first_chain_iterator{first};
+    chs::ik::ConstChainIterator second_chain_iterator{second};
+
+    while (first_chain_iterator.hasNext() && second_chain_iterator.hasNext())
     {
-        return false;
+        expectEqual(first_chain_iterator.next(), second_chain_iterator.next(), precision);
     }
 
-    for (int index = 0; index < first.size(); ++index)
-    {
-        if (!equal(first.at(index), second.at(index), precision))
-        {
-            return false;
-        }
-    }
-
-    return true;
+    EXPECT_TRUE(!first_chain_iterator.hasNext() && !second_chain_iterator.hasNext());
 }
 
-bool TestUtils::equal(const chs::ik::Segment& first, const chs::ik::Segment& second, float precision)
+void TestUtils::expectEqual(const chs::ik::Segment& first, const chs::ik::Segment& second, float precision)
 {
-    return equal(first.worldOrigin(), second.worldOrigin(), precision) &&
-        equal(first.worldEnd(), second.worldEnd(), precision) &&
-        equal(first.length(), second.length(), precision);
+    expectEqual(first.worldOrigin(), second.worldOrigin(), precision);
+    expectEqual(first.worldEnd(), second.worldEnd(), precision);
+    expectEqual(first.length(), second.length(), precision);
 }
 
-bool TestUtils::equal(const glm::vec3& first, const glm::vec3& second, float precision)
+void TestUtils::expectEqual(const glm::vec3& first, const glm::vec3& second, float precision)
 {
-    return equal(first.x, second.x, precision) &&
-        equal(first.y, second.y, precision) &&
-        equal(first.z, second.z, precision);
+    expectEqual(first.x, second.x, precision);
+    expectEqual(first.y, second.y, precision);
+    expectEqual(first.z, second.z, precision);
 }
 
-bool TestUtils::equal(float first, float second, float precision)
+void TestUtils::expectEqual(float first, float second, float precision)
 {
-    return second <= first + precision && second >= first - precision;
+    EXPECT_TRUE(first - precision <= second && second <= first + precision);
 }

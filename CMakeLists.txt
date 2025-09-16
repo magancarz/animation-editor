@@ -31,4 +31,6 @@ add_library(chaos-inverse-kinematics STATIC ${CHAOS_IK_SOURCES})
 target_include_directories(chaos-inverse-kinematics PUBLIC Include)
 target_link_libraries(chaos-inverse-kinematics glm::glm)
 
+add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
+
 add_subdirectory(Tests)

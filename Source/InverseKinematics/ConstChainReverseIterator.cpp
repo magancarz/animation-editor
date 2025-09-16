@@ -20,33 +20,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include "InverseKinematics/ConstChainReverseIterator.h"
 
-#include "InverseKinematics/Chain.h"
-#include "InverseKinematics/Effector.h"
+#include <iostream>
 
 namespace chs::ik
 {
-    class FABRIKSolver
+    ConstChainReverseIterator::ConstChainReverseIterator(const Chain& chain)
+        : source_chain{&chain} {}
+
+    bool ConstChainReverseIterator::hasNext() const
     {
-    public:
-        explicit FABRIKSolver(int num_of_iterations = 1);
+        return (!current_segment && !source_chain->empty()) || (current_segment && current_segment->hasParent());
+    }
 
-        FABRIKSolver(const FABRIKSolver&) = default;
-        FABRIKSolver& operator=(const FABRIKSolver&) = default;
-        FABRIKSolver(FABRIKSolver&&) noexcept = default;
-        FABRIKSolver& operator=(FABRIKSolver&&) noexcept = default;
-    
-        void solve(Chain& chain, const Effector& effector) const;
+    const Segment& ConstChainReverseIterator::next()
+    {
+        assert(hasNext() && "Cannot call 'next' while the next element is invalid!");
 
-    private:
-        int num_of_iterations{1};
+        if (!current_segment)
+        {
+            current_segment = &source_chain->first();
+            return *current_segment;
+        }
 
-        [[nodiscard]] bool effectorFartherThanChainLength(const Chain& chain, const Effector& effector) const;
-        void performChainStraightening(Chain& chain, const Effector& effector) const;
-        void performFABRIKIterations(Chain& chain, const Effector& effector) const;
-        [[nodiscard]] Effector createEffectorFromChainOrigin(const Chain& chain) const;
-        void performForwardReachingPass(Chain& chain, const Effector& effector) const;
-        void performBackwardReachingPass(Chain& chain, const Effector& effector) const;
-    };
+        current_segment = &current_segment->parent();
+        return *current_segment;
+    }
 }

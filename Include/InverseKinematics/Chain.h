@@ -32,28 +32,24 @@ namespace chs::ik
     {
     public:
         Chain() = default;
+        explicit Chain(std::unique_ptr<Segment> chain_root);
 
-        Chain(const Chain&) = default;
-        Chain& operator=(const Chain&) = default;
+        Chain(const Chain&) = delete;
+        Chain& operator=(const Chain&) = delete;
         Chain(Chain&&) noexcept = default;
         Chain& operator=(Chain&&) noexcept = default;
-    
-        [[nodiscard]] float calculateTotalLength() const;
 
-        void addSegment(Segment segment);
-
-        [[nodiscard]] std::vector<Segment>& segments() { return chain_segments; }
-        [[nodiscard]] const std::vector<Segment>& segments() const { return chain_segments; }
-        [[nodiscard]] Segment& at(std::size_t index) { return chain_segments.at(index); }
-        [[nodiscard]] const Segment& at(std::size_t index) const { return chain_segments.at(index); }
-        [[nodiscard]] int empty() const { return chain_segments.empty(); }
-        [[nodiscard]] int size() const { return chain_segments.size(); }
-        [[nodiscard]] Segment& first() { return chain_segments.front(); }
-        [[nodiscard]] const Segment& first() const { return chain_segments.front(); }
-        [[nodiscard]] Segment& last() { return chain_segments.back(); }
-        [[nodiscard]] const Segment& last() const { return chain_segments.back(); }
+        [[nodiscard]] float length() const;
+        [[nodiscard]] bool empty() const { return !chain_root; }
+        [[nodiscard]] Segment& first();
+        [[nodiscard]] const Segment& first() const;
+        [[nodiscard]] Segment& last();
+        [[nodiscard]] const Segment& last() const;
 
     private:
-        std::vector<Segment> chain_segments;
+        Segment& firstImpl() const;
+        Segment& lastImpl() const;
+
+        std::unique_ptr<Segment> chain_root;
     };
 }

@@ -24,23 +24,110 @@
 
 namespace chs::ik
 {
-    Segment::Segment(const glm::vec3& world_origin, const glm::vec3& world_end)
-        : world_origin{world_origin}, world_end{world_end}, segment_length{glm::distance(world_origin, world_end)} {}
+    Segment::Segment(const glm::mat4& world_transform)
+        : world_transform{world_transform}, local_transform{world_transform} {}
 
-    void Segment::setWorldOrigin(const glm::vec3& origin)
+    void Segment::addChild(std::unique_ptr<Segment> child)
     {
-        world_origin = origin;
-        refresh();
+        child_segment = std::move(child);
+        child_segment->parent_segment = this;
+        child_segment->setWorldTransform(child_segment->worldTransform());
     }
 
-    void Segment::refresh()
+    void Segment::setWorldTransform(const glm::mat4& transform)
     {
-        segment_length = glm::distance(world_origin, world_end);
+        world_transform = transform;
+        local_transform = glm::inverse(getParentWorldTransform()) * world_transform;
+
+        if (child_segment)
+        {
+            const glm::mat4 child_new_world_transform = world_transform * child_segment->localTransform();
+            child_segment->setWorldTransform(child_new_world_transform);
+        }
     }
 
-    void Segment::setWorldEnd(const glm::vec3& end)
+    glm::mat4 Segment::getParentWorldTransform() const
     {
-        world_end = end;
-        refresh();
+        return parent_segment ? parent_segment->worldTransform() : glm::mat4{1.0f};
+    }
+
+    void Segment::setLocalTransform(const glm::mat4& transform)
+    {
+        local_transform = transform;
+        world_transform = getParentWorldTransform() * local_transform;
+
+        if (child_segment)
+        {
+            const glm::mat4 child_new_world_transform = world_transform * child_segment->localTransform();
+            child_segment->setWorldTransform(child_new_world_transform);
+        }
+    }
+
+    void Segment::forceWorldTransform(const glm::mat4& transform)
+    {
+        world_transform = transform;
+    }
+
+    void Segment::Segment::refresh()
+    {
+        local_transform = glm::inverse(getParentWorldTransform()) * world_transform;
+
+        if (child_segment)
+        {
+            child_segment->refresh();
+        }
+    }
+
+    Segment& Segment::parent()
+    {
+        return parentImpl();
+    }
+
+    Segment& Segment::parentImpl() const
+    {
+        assert(hasParent() && "Cannot call 'parent' while the parent is null!");
+        return *parent_segment;
+    }
+
+    const Segment& Segment::parent() const
+    {
+        return parentImpl();
+    }
+
+    Segment& Segment::child()
+    {
+        return childImpl();
+    }
+
+    Segment& Segment::childImpl() const
+    {
+        assert(hasChild() && "Cannot call 'child' while the child is null!");
+        return *child_segment;
+    }
+
+    const Segment& Segment::child() const
+    {
+        return childImpl();
+    }
+
+    glm::vec3 Segment::worldOrigin() const
+    {
+        if (hasParent())
+        {
+            return parent_segment->worldEnd();
+        }
+
+        return glm::vec3{0.0f};
+    }
+
+    glm::vec3 Segment::worldEnd() const
+    {
+        return world_transform * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
+    }
+
+    float Segment::length() const
+    {
+        static constexpr int TRANSLATION_COLUMN_INDEX = 3;
+        return glm::length(glm::vec3{local_transform[TRANSLATION_COLUMN_INDEX]});
     }
 }
