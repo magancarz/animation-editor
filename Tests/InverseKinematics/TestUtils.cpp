@@ -25,7 +25,7 @@
 #include <gtest/gtest.h>
 #include <glm/gtx/quaternion.hpp>
 
-#include "InverseKinematics/ConstChainIterator.h"
+#include "Common/ConstChainIterator.h"
 
 glm::mat4 TestUtils::fromVector(const glm::vec3& vector)
 {
@@ -34,10 +34,10 @@ glm::mat4 TestUtils::fromVector(const glm::vec3& vector)
     return translation * rotation;
 }
 
-void TestUtils::expectEqual(const chs::ik::Chain& first, const chs::ik::Chain& second, float precision)
+void TestUtils::expectEqual(const chs::common::Chain& first, const chs::common::Chain& second, float precision)
 {
-    chs::ik::ConstChainIterator first_chain_iterator{first};
-    chs::ik::ConstChainIterator second_chain_iterator{second};
+    chs::common::ConstChainIterator first_chain_iterator{first};
+    chs::common::ConstChainIterator second_chain_iterator{second};
 
     while (first_chain_iterator.hasNext() && second_chain_iterator.hasNext())
     {
@@ -47,7 +47,7 @@ void TestUtils::expectEqual(const chs::ik::Chain& first, const chs::ik::Chain& s
     EXPECT_TRUE(!first_chain_iterator.hasNext() && !second_chain_iterator.hasNext());
 }
 
-void TestUtils::expectEqual(const chs::ik::Segment& first, const chs::ik::Segment& second, float precision)
+void TestUtils::expectEqual(const chs::common::Segment& first, const chs::common::Segment& second, float precision)
 {
     expectEqual(first.worldOrigin(), second.worldOrigin(), precision);
     expectEqual(first.worldEnd(), second.worldEnd(), precision);

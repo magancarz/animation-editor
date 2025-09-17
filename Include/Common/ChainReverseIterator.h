@@ -22,19 +22,19 @@
 
 #pragma once
 
-#include "InverseKinematics/Chain.h"
+#include "Common/Chain.h"
 
-namespace chs::ik
+namespace chs::common
 {
-    class ChainIterator
+    class ChainReverseIterator
     {
     public:
-        explicit ChainIterator(Chain& chain);
+        explicit ChainReverseIterator(Chain& chain);
 
-        ChainIterator(const ChainIterator&) = default;
-        ChainIterator& operator=(const ChainIterator&) = default;
-        ChainIterator(ChainIterator&&) noexcept = default;
-        ChainIterator& operator=(ChainIterator&&) noexcept = default;
+        ChainReverseIterator(const ChainReverseIterator&) = default;
+        ChainReverseIterator& operator=(const ChainReverseIterator&) = default;
+        ChainReverseIterator(ChainReverseIterator&&) noexcept = default;
+        ChainReverseIterator& operator=(ChainReverseIterator&&) noexcept = default;
     
         [[nodiscard]] bool hasNext() const;
         [[nodiscard]] Segment& next();

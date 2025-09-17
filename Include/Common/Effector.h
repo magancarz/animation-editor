@@ -24,7 +24,7 @@
 
 #include <glm/glm.hpp>
 
-namespace chs::ik
+namespace chs::common
 {
     struct Effector
     {

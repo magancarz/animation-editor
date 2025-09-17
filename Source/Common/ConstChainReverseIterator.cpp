@@ -20,21 +20,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "InverseKinematics/ConstChainIterator.h"
+#include "Common/ConstChainReverseIterator.h"
 
 #include <iostream>
 
-namespace chs::ik
+namespace chs::common
 {
-    ConstChainIterator::ConstChainIterator(const Chain& chain)
+    ConstChainReverseIterator::ConstChainReverseIterator(const Chain& chain)
         : source_chain{&chain} {}
 
-    bool ConstChainIterator::hasNext() const
+    bool ConstChainReverseIterator::hasNext() const
     {
-        return (!current_segment && !source_chain->empty()) || (current_segment && current_segment->hasChild());
+        return (!current_segment && !source_chain->empty()) || (current_segment && current_segment->hasParent());
     }
 
-    const Segment& ConstChainIterator::next()
+    const Segment& ConstChainReverseIterator::next()
     {
         assert(hasNext() && "Cannot call 'next' while the next element is invalid!");
 
@@ -44,7 +44,7 @@ namespace chs::ik
             return *current_segment;
         }
 
-        current_segment = &current_segment->child();
+        current_segment = &current_segment->parent();
         return *current_segment;
     }
 }

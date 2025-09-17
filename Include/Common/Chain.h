@@ -20,31 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "InverseKinematics/ChainReverseIterator.h"
+#pragma once
 
-#include <iostream>
+#include <vector>
 
-namespace chs::ik
+#include "Common/Segment.h"
+
+namespace chs::common
 {
-    ChainReverseIterator::ChainReverseIterator(Chain& chain)
-        : source_chain{&chain} {}
-
-    bool ChainReverseIterator::hasNext() const
+    class Chain
     {
-        return (!current_segment && !source_chain->empty()) || (current_segment && current_segment->hasParent());
-    }
+    public:
+        Chain() = default;
+        explicit Chain(std::unique_ptr<Segment> chain_root);
 
-    Segment& ChainReverseIterator::next()
-    {
-        assert(hasNext() && "Cannot call 'next' while the next element is invalid!");
+        Chain(const Chain&) = delete;
+        Chain& operator=(const Chain&) = delete;
+        Chain(Chain&&) noexcept = default;
+        Chain& operator=(Chain&&) noexcept = default;
 
-        if (!current_segment)
-        {
-            current_segment = &source_chain->last();
-            return *current_segment;
-        }
+        [[nodiscard]] float length() const;
+        [[nodiscard]] bool empty() const { return !chain_root; }
+        [[nodiscard]] Segment& first();
+        [[nodiscard]] const Segment& first() const;
+        [[nodiscard]] Segment& last();
+        [[nodiscard]] const Segment& last() const;
 
-        current_segment = &current_segment->parent();
-        return *current_segment;
-    }
+    private:
+        Segment& firstImpl() const;
+        Segment& lastImpl() const;
+
+        std::unique_ptr<Segment> chain_root;
+    };
 }

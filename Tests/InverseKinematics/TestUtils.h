@@ -22,15 +22,15 @@
 
 #pragma once
 
-#include "InverseKinematics/Chain.h"
+#include "Common/Chain.h"
 
 class TestUtils
 {
 public:
     static glm::mat4 fromVector(const glm::vec3& translation);
 
-    static void expectEqual(const chs::ik::Chain& first, const chs::ik::Chain& second, float precision = 0.001f);
-    static void expectEqual(const chs::ik::Segment& first, const chs::ik::Segment& second, float precision = 0.001f);
+    static void expectEqual(const chs::common::Chain& first, const chs::common::Chain& second, float precision = 0.001f);
+    static void expectEqual(const chs::common::Segment& first, const chs::common::Segment& second, float precision = 0.001f);
     static void expectEqual(const glm::vec3& first, const glm::vec3& second, float precision = 0.001f);
     static void expectEqual(float first, float second, float precision = 0.001f);
 };

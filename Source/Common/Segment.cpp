@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "InverseKinematics/Segment.h"
+#include "Common/Segment.h"
 
-namespace chs::ik
+namespace chs::common
 {
     Segment::Segment(const glm::mat4& world_transform)
         : world_transform{world_transform}, local_transform{world_transform} {}

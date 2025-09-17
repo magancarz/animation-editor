@@ -26,7 +26,7 @@ project(animation-editor LANGUAGES C CXX)
 
 add_subdirectory(ThirdParty)
 
-file(GLOB_RECURSE CHAOS_IK_SOURCES Source/InverseKinematics/*.cpp)
+file(GLOB_RECURSE CHAOS_IK_SOURCES Source/InverseKinematics/*.cpp Source/Common/*.cpp)
 add_library(chaos-inverse-kinematics STATIC ${CHAOS_IK_SOURCES})
 target_include_directories(chaos-inverse-kinematics PUBLIC Include)
 target_link_libraries(chaos-inverse-kinematics glm::glm)

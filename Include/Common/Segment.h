@@ -29,7 +29,7 @@
 
 #include "Segment.h"
 
-namespace chs::ik
+namespace chs::common
 {
     class Segment
     {

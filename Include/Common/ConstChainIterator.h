@@ -22,34 +22,25 @@
 
 #pragma once
 
-#include <vector>
+#include "Common/Chain.h"
 
-#include "InverseKinematics/Segment.h"
-
-namespace chs::ik
+namespace chs::common
 {
-    class Chain
+    class ConstChainIterator
     {
     public:
-        Chain() = default;
-        explicit Chain(std::unique_ptr<Segment> chain_root);
+        explicit ConstChainIterator(const Chain& chain);
 
-        Chain(const Chain&) = delete;
-        Chain& operator=(const Chain&) = delete;
-        Chain(Chain&&) noexcept = default;
-        Chain& operator=(Chain&&) noexcept = default;
-
-        [[nodiscard]] float length() const;
-        [[nodiscard]] bool empty() const { return !chain_root; }
-        [[nodiscard]] Segment& first();
-        [[nodiscard]] const Segment& first() const;
-        [[nodiscard]] Segment& last();
-        [[nodiscard]] const Segment& last() const;
+        ConstChainIterator(const ConstChainIterator&) = default;
+        ConstChainIterator& operator=(const ConstChainIterator&) = default;
+        ConstChainIterator(ConstChainIterator&&) noexcept = default;
+        ConstChainIterator& operator=(ConstChainIterator&&) noexcept = default;
+    
+        [[nodiscard]] bool hasNext() const;
+        [[nodiscard]] const Segment& next();
 
     private:
-        Segment& firstImpl() const;
-        Segment& lastImpl() const;
-
-        std::unique_ptr<Segment> chain_root;
+        const Chain* source_chain;
+        const Segment* current_segment{nullptr};
     };
 }

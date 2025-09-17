@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include "InverseKinematics/Chain.h"
-#include "InverseKinematics/Effector.h"
+#include "Common/Chain.h"
+#include "Common/Effector.h"
 
 namespace chs::ik
 {
@@ -37,18 +37,18 @@ namespace chs::ik
         FABRIKSolver(FABRIKSolver&&) noexcept = default;
         FABRIKSolver& operator=(FABRIKSolver&&) noexcept = default;
     
-        void solve(Chain& chain, const Effector& end_effector) const;
-        void solve(Chain& chain, const Effector& end_effector, const std::vector<Effector>& middle_effectors) const;
+        void solve(chs::common::Chain& chain, const chs::common::Effector& end_effector) const;
+        void solve(chs::common::Chain& chain, const chs::common::Effector& end_effector, const std::vector<chs::common::Effector>& middle_effectors) const;
 
     private:
         int num_of_iterations{1};
 
-        [[nodiscard]] bool effectorFartherThanChainLength(const Chain& chain, const Effector& end_effector) const;
-        void performChainStraightening(Chain& chain, const Effector& end_effector) const;
-        void performFABRIKIterations(Chain& chain, const Effector& end_effector, const std::vector<Effector>& middle_effectors) const;
-        [[nodiscard]] Effector createEffectorFromChainOrigin(const Chain& chain) const;
-        void performForwardReachingPass(Chain& chain, const Effector& end_effector, const std::vector<Effector>& middle_effectors) const;
-        void performBackwardReachingPass(Chain& chain, const Effector& end_effector) const;
-        glm::vec3 calculateToMiddleEffectorsDirection(const glm::vec3& from, const std::vector<Effector>& middle_effectors) const;
+        [[nodiscard]] bool effectorFartherThanChainLength(const chs::common::Chain& chain, const chs::common::Effector& end_effector) const;
+        void performChainStraightening(chs::common::Chain& chain, const chs::common::Effector& end_effector) const;
+        void performFABRIKIterations(chs::common::Chain& chain, const chs::common::Effector& end_effector, const std::vector<chs::common::Effector>& middle_effectors) const;
+        [[nodiscard]] chs::common::Effector createEffectorFromChainOrigin(const chs::common::Chain& chain) const;
+        void performForwardReachingPass(chs::common::Chain& chain, const chs::common::Effector& end_effector, const std::vector<chs::common::Effector>& middle_effectors) const;
+        void performBackwardReachingPass(chs::common::Chain& chain, const chs::common::Effector& end_effector) const;
+        glm::vec3 calculateToMiddleEffectorsDirection(const glm::vec3& from, const std::vector<chs::common::Effector>& middle_effectors) const;
     };
 }

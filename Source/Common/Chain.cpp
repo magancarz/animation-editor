@@ -20,11 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "InverseKinematics/Chain.h"
+#include "Common/Chain.h"
 
 #include <iostream>
 
-namespace chs::ik
+namespace chs::common
 {
     Chain::Chain(std::unique_ptr<Segment> chain_root)
         : chain_root{std::move(chain_root)} {}
