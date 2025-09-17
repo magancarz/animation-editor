@@ -107,3 +107,41 @@ TEST(FABRIKSolverTests, ShouldApplyFABRIKOnGivenChain)
 
     TestUtils::expectEqual(chain, expected_chain);
 }
+
+TEST(FABRIKSolverTests, ShouldAffectFABRIKWithMiddleEffectors)
+{
+    // given
+    chs::ik::FABRIKSolver fabrik_solver{10};
+
+    auto first_segment = std::make_unique<chs::ik::Segment>(TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f}));
+    auto second_segment = std::make_unique<chs::ik::Segment>(TestUtils::fromVector(glm::vec3{2.0f, 0.0f, 0.0f}));
+    auto third_segment = std::make_unique<chs::ik::Segment>(TestUtils::fromVector(glm::vec3{3.0f, 0.0f, 0.0f}));
+    
+    second_segment->addChild(std::move(third_segment));
+    first_segment->addChild(std::move(second_segment));
+
+    chs::ik::Chain chain{std::move(first_segment)};
+
+    chs::ik::Effector effector{};
+    effector.world_location = glm::vec3{1.0f, 1.0f, 0.0f};
+
+    chs::ik::Effector middle_effector{};
+    middle_effector.world_location = glm::vec3{-1.0f, 2.0f, 0.0f};
+
+    std::vector<chs::ik::Effector> middle_effectors{middle_effector};
+
+    // when
+    fabrik_solver.solve(chain, effector, middle_effectors);
+
+    // then
+    auto expected_first_segment = std::make_unique<chs::ik::Segment>(TestUtils::fromVector(glm::vec3{-0.536611f, 0.843829f, 0.0f}));
+    auto expected_second_segment = std::make_unique<chs::ik::Segment>(TestUtils::fromVector(glm::vec3{0.178203f, 1.543144f, 0.0f}));
+    auto expected_third_segment = std::make_unique<chs::ik::Segment>(TestUtils::fromVector(glm::vec3{1.012459f, 0.991766f, 0.0f}));
+    
+    expected_second_segment->addChild(std::move(expected_third_segment));
+    expected_first_segment->addChild(std::move(expected_second_segment));
+
+    chs::ik::Chain expected_chain{std::move(expected_first_segment)};
+
+    TestUtils::expectEqual(chain, expected_chain);
+}

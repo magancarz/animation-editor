@@ -37,16 +37,18 @@ namespace chs::ik
         FABRIKSolver(FABRIKSolver&&) noexcept = default;
         FABRIKSolver& operator=(FABRIKSolver&&) noexcept = default;
     
-        void solve(Chain& chain, const Effector& effector) const;
+        void solve(Chain& chain, const Effector& end_effector) const;
+        void solve(Chain& chain, const Effector& end_effector, const std::vector<Effector>& middle_effectors) const;
 
     private:
         int num_of_iterations{1};
 
-        [[nodiscard]] bool effectorFartherThanChainLength(const Chain& chain, const Effector& effector) const;
-        void performChainStraightening(Chain& chain, const Effector& effector) const;
-        void performFABRIKIterations(Chain& chain, const Effector& effector) const;
+        [[nodiscard]] bool effectorFartherThanChainLength(const Chain& chain, const Effector& end_effector) const;
+        void performChainStraightening(Chain& chain, const Effector& end_effector) const;
+        void performFABRIKIterations(Chain& chain, const Effector& end_effector, const std::vector<Effector>& middle_effectors) const;
         [[nodiscard]] Effector createEffectorFromChainOrigin(const Chain& chain) const;
-        void performForwardReachingPass(Chain& chain, const Effector& effector) const;
-        void performBackwardReachingPass(Chain& chain, const Effector& effector) const;
+        void performForwardReachingPass(Chain& chain, const Effector& end_effector, const std::vector<Effector>& middle_effectors) const;
+        void performBackwardReachingPass(Chain& chain, const Effector& end_effector) const;
+        glm::vec3 calculateToMiddleEffectorsDirection(const glm::vec3& from, const std::vector<Effector>& middle_effectors) const;
     };
 }
