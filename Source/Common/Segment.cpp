@@ -31,7 +31,7 @@ namespace chs::common
     {
         child_segment = std::move(child);
         child_segment->parent_segment = this;
-        child_segment->setWorldTransform(child_segment->worldTransform());
+        child_segment->setLocalTransform(child_segment->localTransform());
     }
 
     void Segment::setWorldTransform(const glm::mat4& transform)

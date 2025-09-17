@@ -45,9 +45,12 @@ TEST(FABRIKSolverTests, ShouldPerformChainStraighteningWhenTheEffectorIsTooFar)
     // given
     chs::ik::FABRIKSolver fabrik_solver{};
 
-    auto first_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f}));
-    auto second_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{2.0f, 0.0f, 0.0f}));
-    auto third_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{3.0f, 0.0f, 0.0f}));
+    glm::mat4 root_transform = TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f});
+    glm::mat4 basic_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
+
+    auto first_segment = std::make_unique<chs::common::Segment>(root_transform);
+    auto second_segment = std::make_unique<chs::common::Segment>(basic_transform);
+    auto third_segment = std::make_unique<chs::common::Segment>(basic_transform);
     
     second_segment->addChild(std::move(third_segment));
     first_segment->addChild(std::move(second_segment));
@@ -63,9 +66,12 @@ TEST(FABRIKSolverTests, ShouldPerformChainStraighteningWhenTheEffectorIsTooFar)
     // then
     glm::vec3 chain_direction = glm::normalize(effector.world_location);
 
-    auto expected_first_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(chain_direction * 1.0f));
-    auto expected_second_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(chain_direction * 2.0f));
-    auto expected_third_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(chain_direction * 3.0f));
+    glm::mat4 first_expected_world_transform = TestUtils::fromVector(chain_direction * 1.0f);
+    glm::mat4 expected_local_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
+
+    auto expected_first_segment = std::make_unique<chs::common::Segment>(first_expected_world_transform);
+    auto expected_second_segment = std::make_unique<chs::common::Segment>(expected_local_transform);
+    auto expected_third_segment = std::make_unique<chs::common::Segment>(expected_local_transform);
     
     expected_second_segment->addChild(std::move(expected_third_segment));
     expected_first_segment->addChild(std::move(expected_second_segment));
@@ -80,9 +86,12 @@ TEST(FABRIKSolverTests, ShouldApplyFABRIKOnGivenChain)
     // given
     chs::ik::FABRIKSolver fabrik_solver{5};
 
-    auto first_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f}));
-    auto second_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{2.0f, 0.0f, 0.0f}));
-    auto third_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{3.0f, 0.0f, 0.0f}));
+    glm::mat4 root_transform = TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f});
+    glm::mat4 basic_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
+
+    auto first_segment = std::make_unique<chs::common::Segment>(root_transform);
+    auto second_segment = std::make_unique<chs::common::Segment>(basic_transform);
+    auto third_segment = std::make_unique<chs::common::Segment>(basic_transform);
     
     second_segment->addChild(std::move(third_segment));
     first_segment->addChild(std::move(second_segment));
@@ -96,9 +105,13 @@ TEST(FABRIKSolverTests, ShouldApplyFABRIKOnGivenChain)
     fabrik_solver.solve(chain, effector);
 
     // then
-    auto expected_first_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{0.991437f, -0.13059f, 0.0f}));
-    auto expected_second_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{1.820574f, 0.428456f, 0.0f}));
-    auto expected_third_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{1.0f, 1.0f, 0.0f}));
+    glm::mat4 first_expected_transform = TestUtils::fromVector(glm::vec3{0.991437f, -0.13059f, 0.0f});
+    glm::mat4 second_expected_transform = TestUtils::fromVector(glm::vec3{1.820574f, 0.428456f, 0.0f});
+    glm::mat4 third_expected_transform = TestUtils::fromVector(glm::vec3{1.0f, 1.0f, 0.0f});
+
+    auto expected_first_segment = std::make_unique<chs::common::Segment>(first_expected_transform);
+    auto expected_second_segment = std::make_unique<chs::common::Segment>(glm::inverse(first_expected_transform) * second_expected_transform);
+    auto expected_third_segment = std::make_unique<chs::common::Segment>(glm::inverse(second_expected_transform) * third_expected_transform);
     
     expected_second_segment->addChild(std::move(expected_third_segment));
     expected_first_segment->addChild(std::move(expected_second_segment));
@@ -113,9 +126,12 @@ TEST(FABRIKSolverTests, ShouldAffectFABRIKWithMiddleEffectors)
     // given
     chs::ik::FABRIKSolver fabrik_solver{10};
 
-    auto first_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f}));
-    auto second_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{2.0f, 0.0f, 0.0f}));
-    auto third_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{3.0f, 0.0f, 0.0f}));
+    glm::mat4 root_transform = TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f});
+    glm::mat4 basic_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
+
+    auto first_segment = std::make_unique<chs::common::Segment>(root_transform);
+    auto second_segment = std::make_unique<chs::common::Segment>(basic_transform);
+    auto third_segment = std::make_unique<chs::common::Segment>(basic_transform);
     
     second_segment->addChild(std::move(third_segment));
     first_segment->addChild(std::move(second_segment));
@@ -134,9 +150,13 @@ TEST(FABRIKSolverTests, ShouldAffectFABRIKWithMiddleEffectors)
     fabrik_solver.solve(chain, effector, middle_effectors);
 
     // then
-    auto expected_first_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{-0.536611f, 0.843829f, 0.0f}));
-    auto expected_second_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{0.178203f, 1.543144f, 0.0f}));
-    auto expected_third_segment = std::make_unique<chs::common::Segment>(TestUtils::fromVector(glm::vec3{1.012459f, 0.991766f, 0.0f}));
+    glm::mat4 first_expected_transform = TestUtils::fromVector(glm::vec3{-0.536611f, 0.843829f, 0.0f});
+    glm::mat4 second_expected_transform = TestUtils::fromVector(glm::vec3{0.178203f, 1.543144f, 0.0f});
+    glm::mat4 third_expected_transform = TestUtils::fromVector(glm::vec3{1.012459f, 0.991766f, 0.0f});
+
+    auto expected_first_segment = std::make_unique<chs::common::Segment>(first_expected_transform);
+    auto expected_second_segment = std::make_unique<chs::common::Segment>(glm::inverse(first_expected_transform) * second_expected_transform);
+    auto expected_third_segment = std::make_unique<chs::common::Segment>(glm::inverse(second_expected_transform) * third_expected_transform);
     
     expected_second_segment->addChild(std::move(expected_third_segment));
     expected_first_segment->addChild(std::move(expected_second_segment));
