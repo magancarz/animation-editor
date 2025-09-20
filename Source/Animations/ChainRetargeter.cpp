@@ -25,8 +25,6 @@
 #include <glm/glm.hpp>
 
 #include "Common/ChainNormalizer.h"
-#include "Common/ConstChainIterator.h"
-#include "Common/ChainIterator.h"
 #include "Common/LinearAlgebra.h"
 
 namespace chs::anim
@@ -39,7 +37,6 @@ namespace chs::anim
         std::vector<chs::common::Effector> effectors = pickEffectorsFromSourceChain(
             normalized_source_chain, normalized_target_chain);
         applyForwardReachingPass(normalized_target_chain, effectors);
-        normalized_target_chain.first().refresh();
         applyRetargetedChainOntoTarget(normalized_target_chain, target);
     }
 
@@ -49,10 +46,8 @@ namespace chs::anim
     {
         std::vector<chs::common::Effector> effectors{};
         float current_distance = 0.0f;
-        chs::common::ConstChainIterator const_chain_iterator{normalized_target_chain};
-        while (const_chain_iterator.hasNext())
+        for (const auto& segment : normalized_target_chain.segments())
         {
-            const chs::common::Segment& segment = const_chain_iterator.next();
             current_distance += segment.length();
             chs::common::Effector effector{};
             effector.world_location = normalized_source_chain.locationAt(current_distance);
@@ -69,38 +64,36 @@ namespace chs::anim
         glm::vec3 previous_segment_end = normalized_target_chain.worldOrigin();
 
         int current_segment_index = 0;
-        chs::common::ChainIterator chain_iterator{normalized_target_chain};
-        while (chain_iterator.hasNext())
+        for (auto& current_segment : normalized_target_chain.segments())
         {
-            chs::common::Segment& current_segment = chain_iterator.next();
             const float current_segment_length = current_segment.length();
             const chs::common::Effector& current_effector = effectors.at(current_segment_index);
             const glm::vec3 to_world_end_direction = glm::safeNormalize(current_effector.world_location - previous_segment_end);
             const glm::vec3 current_segment_world_end = previous_segment_end + to_world_end_direction * current_segment_length;
             const glm::mat4 current_segment_world_translation = glm::translate(glm::mat4{1.0f}, current_segment_world_end);
             const glm::mat4 current_segment_world_rotation = glm::toMat4(glm::quat{glm::vec3{0, 1, 0}, to_world_end_direction});
-            current_segment.forceWorldTransform(current_segment_world_translation * current_segment_world_rotation);
+            current_segment.setWorldTransform(current_segment_world_translation * current_segment_world_rotation);
             previous_segment_end = current_segment_world_end;
             current_segment_index += 1;
         }
+        normalized_target_chain.refreshLocalTransforms();
     }
 
     void ChainRetargeter::applyRetargetedChainOntoTarget(
         const chs::common::Chain& normalized_target_chain,
         chs::common::Chain& target_chain) const
     {
-        chs::common::ConstChainIterator normalized_chain_iterator{normalized_target_chain};
-        chs::common::ChainIterator chain_iterator{target_chain};
-
-        while (normalized_chain_iterator.hasNext() && chain_iterator.hasNext())
+        const float target_chain_length = target_chain.length();
+        for (int segment_index = 0; segment_index < target_chain.size(); ++segment_index)
         {
-            const chs::common::Segment& normalized_segment = normalized_chain_iterator.next();
-            chs::common::Segment& segment = chain_iterator.next();
+            const chs::common::Segment& normalized_segment = normalized_target_chain.at(segment_index);
+            chs::common::Segment& segment = target_chain.at(segment_index);
             glm::mat4 segment_local_transform = normalized_segment.localTransform();
             static constexpr int TRANSLATION_COLUMN_INDEX = 3;
-            const glm::vec3 translation = segment_local_transform[TRANSLATION_COLUMN_INDEX] * segment.length();
+            const glm::vec3 translation = segment_local_transform[TRANSLATION_COLUMN_INDEX] * target_chain_length;
             segment_local_transform[TRANSLATION_COLUMN_INDEX] = glm::vec4{translation, 1.0f};
             segment.setLocalTransform(segment_local_transform);
         }
+        target_chain.refreshWorldTransforms();
     }
 }

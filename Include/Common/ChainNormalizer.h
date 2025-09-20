@@ -39,11 +39,7 @@ namespace chs::common
         [[nodiscard]] Chain normalize(const Chain& chain) const;
 
     private:
-        [[nodiscard]] Chain recursivelyNormalizeChain(const Chain& chain) const;
-        [[nodiscard]] std::unique_ptr<Segment> recursivelyNormalizeChain(
-            const float chain_total_length,
-            const Segment& segment) const;
-        [[nodiscard]] std::unique_ptr<Segment> normalizeSegment(
+        [[nodiscard]] Segment normalizeSegment(
             const float chain_total_length,
             const Segment& segment) const;
     };

@@ -26,34 +26,18 @@ namespace chs::common
 {
     Chain ChainNormalizer::normalize(const Chain& chain) const
     {
-        return recursivelyNormalizeChain(chain);
-    }
+        Chain normalized_chain{};
 
-    Chain ChainNormalizer::recursivelyNormalizeChain(const Chain& chain) const
-    {
-        float total_chain_length = chain.length();
-        std::unique_ptr<Segment> normalized_chain_root = recursivelyNormalizeChain(
-            total_chain_length, chain.first());
-
-        return Chain{std::move(normalized_chain_root)};
-    }
-
-    std::unique_ptr<Segment> ChainNormalizer::recursivelyNormalizeChain(
-        const float chain_total_length,
-        const Segment& segment) const
-    {
-        auto normalized_segment = normalizeSegment(chain_total_length, segment);
-        
-        if (segment.hasChild())
+        const float chain_total_length = chain.length();
+        for (const auto& segment : chain.segments())
         {
-            normalized_segment->addChild(
-                recursivelyNormalizeChain(chain_total_length, segment.child()));
+            normalized_chain.addNextSegment(normalizeSegment(chain_total_length, segment));
         }
 
-        return normalized_segment;
+        return normalized_chain;
     }
 
-    std::unique_ptr<Segment> ChainNormalizer::normalizeSegment(
+    Segment ChainNormalizer::normalizeSegment(
         const float chain_total_length,
         const Segment& segment) const
     {
@@ -63,10 +47,6 @@ namespace chs::common
             segment_local_transform[TRANSLATION_COLUMN_INDEX] / chain_total_length;
         segment_local_transform[TRANSLATION_COLUMN_INDEX] = glm::vec4{normalized_translation, 1.0f};
 
-        auto normalized_segment = segment.clone();
-        normalized_segment->setWorldTransform(segment_local_transform);
-        normalized_segment->setLocalTransform(segment_local_transform);
-        
-        return normalized_segment;
+        return Segment{segment_local_transform};
     }
 }

@@ -32,26 +32,31 @@ namespace chs::common
     {
     public:
         Chain() = default;
-        explicit Chain(std::unique_ptr<Segment> chain_root);
 
-        Chain(const Chain&) = delete;
-        Chain& operator=(const Chain&) = delete;
+        Chain(const Chain&) = default;
+        Chain& operator=(const Chain&) = default;
         Chain(Chain&&) noexcept = default;
         Chain& operator=(Chain&&) noexcept = default;
 
+        void addNextSegment(Segment segment);
+        void refreshLocalTransforms();
+        void refreshWorldTransforms();
+
         [[nodiscard]] float length() const;
-        [[nodiscard]] bool empty() const { return !chain_root; }
+        [[nodiscard]] bool empty() const { return chain_segments.empty(); }
+        [[nodiscard]] int size() const { return static_cast<int>(chain_segments.size()); }
         [[nodiscard]] Segment& first();
         [[nodiscard]] const Segment& first() const;
         [[nodiscard]] Segment& last();
         [[nodiscard]] const Segment& last() const;
+        [[nodiscard]] Segment& at(int index) { return chain_segments.at(index); }
+        [[nodiscard]] const Segment& at(int index) const { return chain_segments.at(index); }
+        [[nodiscard]] std::vector<Segment>& segments() { return chain_segments; }
+        [[nodiscard]] const std::vector<Segment>& segments() const { return chain_segments; }
         [[nodiscard]] glm::vec3 locationAt(float distance_from_origin) const;
         [[nodiscard]] glm::vec3 worldOrigin() const;
 
     private:
-        Segment& firstImpl() const;
-        Segment& lastImpl() const;
-
-        std::unique_ptr<Segment> chain_root;
+        std::vector<Segment> chain_segments;
     };
 }

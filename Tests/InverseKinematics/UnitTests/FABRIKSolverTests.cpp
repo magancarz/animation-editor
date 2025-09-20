@@ -42,22 +42,18 @@ TEST(FABRIKSolverTests, ShouldReturnEarlyWhenTheChainIsEmpty)
 TEST(FABRIKSolverTests, ShouldPerformChainStraighteningWhenTheEffectorIsTooFar)
 {
     // given
-    chs::ik::FABRIKSolver fabrik_solver{};
-
     glm::mat4 root_transform = TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f});
     glm::mat4 basic_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
 
-    auto first_segment = std::make_unique<chs::common::Segment>(root_transform);
-    auto second_segment = std::make_unique<chs::common::Segment>(basic_transform);
-    auto third_segment = std::make_unique<chs::common::Segment>(basic_transform);
+    chs::common::Chain chain{};
+    chain.addNextSegment(chs::common::Segment{root_transform});
+    chain.addNextSegment(chs::common::Segment{basic_transform});
+    chain.addNextSegment(chs::common::Segment{basic_transform});
     
-    second_segment->addChild(std::move(third_segment));
-    first_segment->addChild(std::move(second_segment));
-
-    chs::common::Chain chain{std::move(first_segment)};
-
     chs::common::Effector effector{};
     effector.world_location = glm::vec3{3.0f, 3.0f, 0.0f};
+
+    chs::ik::FABRIKSolver fabrik_solver{};
 
     // when
     fabrik_solver.solve(chain, effector);
@@ -68,14 +64,10 @@ TEST(FABRIKSolverTests, ShouldPerformChainStraighteningWhenTheEffectorIsTooFar)
     glm::mat4 first_expected_world_transform = TestUtils::fromVector(chain_direction * 1.0f);
     glm::mat4 expected_local_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
 
-    auto expected_first_segment = std::make_unique<chs::common::Segment>(first_expected_world_transform);
-    auto expected_second_segment = std::make_unique<chs::common::Segment>(expected_local_transform);
-    auto expected_third_segment = std::make_unique<chs::common::Segment>(expected_local_transform);
-    
-    expected_second_segment->addChild(std::move(expected_third_segment));
-    expected_first_segment->addChild(std::move(expected_second_segment));
-
-    chs::common::Chain expected_chain{std::move(expected_first_segment)};
+    chs::common::Chain expected_chain{};
+    expected_chain.addNextSegment(chs::common::Segment{first_expected_world_transform});
+    expected_chain.addNextSegment(chs::common::Segment{expected_local_transform});
+    expected_chain.addNextSegment(chs::common::Segment{expected_local_transform});
 
     TestUtils::expectEqual(chain, expected_chain);
 }
@@ -88,14 +80,10 @@ TEST(FABRIKSolverTests, ShouldApplyFABRIKOnGivenChain)
     glm::mat4 root_transform = TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f});
     glm::mat4 basic_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
 
-    auto first_segment = std::make_unique<chs::common::Segment>(root_transform);
-    auto second_segment = std::make_unique<chs::common::Segment>(basic_transform);
-    auto third_segment = std::make_unique<chs::common::Segment>(basic_transform);
-    
-    second_segment->addChild(std::move(third_segment));
-    first_segment->addChild(std::move(second_segment));
-
-    chs::common::Chain chain{std::move(first_segment)};
+    chs::common::Chain chain{};
+    chain.addNextSegment(chs::common::Segment{root_transform});
+    chain.addNextSegment(chs::common::Segment{basic_transform});
+    chain.addNextSegment(chs::common::Segment{basic_transform});
 
     chs::common::Effector effector{};
     effector.world_location = glm::vec3{1.0f, 1.0f, 0.0f};
@@ -108,14 +96,10 @@ TEST(FABRIKSolverTests, ShouldApplyFABRIKOnGivenChain)
     glm::mat4 second_expected_transform = TestUtils::fromVector(glm::vec3{1.820574f, 0.428456f, 0.0f});
     glm::mat4 third_expected_transform = TestUtils::fromVector(glm::vec3{1.0f, 1.0f, 0.0f});
 
-    auto expected_first_segment = std::make_unique<chs::common::Segment>(first_expected_transform);
-    auto expected_second_segment = std::make_unique<chs::common::Segment>(glm::inverse(first_expected_transform) * second_expected_transform);
-    auto expected_third_segment = std::make_unique<chs::common::Segment>(glm::inverse(second_expected_transform) * third_expected_transform);
-    
-    expected_second_segment->addChild(std::move(expected_third_segment));
-    expected_first_segment->addChild(std::move(expected_second_segment));
-
-    chs::common::Chain expected_chain{std::move(expected_first_segment)};
+    chs::common::Chain expected_chain{};
+    expected_chain.addNextSegment(chs::common::Segment{first_expected_transform});
+    expected_chain.addNextSegment(chs::common::Segment{glm::inverse(first_expected_transform) * second_expected_transform});
+    expected_chain.addNextSegment(chs::common::Segment{glm::inverse(second_expected_transform) * third_expected_transform});
 
     TestUtils::expectEqual(chain, expected_chain);
 }
@@ -128,14 +112,10 @@ TEST(FABRIKSolverTests, ShouldAffectFABRIKWithMiddleEffectors)
     glm::mat4 root_transform = TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f});
     glm::mat4 basic_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
 
-    auto first_segment = std::make_unique<chs::common::Segment>(root_transform);
-    auto second_segment = std::make_unique<chs::common::Segment>(basic_transform);
-    auto third_segment = std::make_unique<chs::common::Segment>(basic_transform);
-    
-    second_segment->addChild(std::move(third_segment));
-    first_segment->addChild(std::move(second_segment));
-
-    chs::common::Chain chain{std::move(first_segment)};
+    chs::common::Chain chain{};
+    chain.addNextSegment(chs::common::Segment{root_transform});
+    chain.addNextSegment(chs::common::Segment{basic_transform});
+    chain.addNextSegment(chs::common::Segment{basic_transform});
 
     chs::common::Effector effector{};
     effector.world_location = glm::vec3{1.0f, 1.0f, 0.0f};
@@ -153,14 +133,10 @@ TEST(FABRIKSolverTests, ShouldAffectFABRIKWithMiddleEffectors)
     glm::mat4 second_expected_transform = TestUtils::fromVector(glm::vec3{0.178203f, 1.543144f, 0.0f});
     glm::mat4 third_expected_transform = TestUtils::fromVector(glm::vec3{1.012459f, 0.991766f, 0.0f});
 
-    auto expected_first_segment = std::make_unique<chs::common::Segment>(first_expected_transform);
-    auto expected_second_segment = std::make_unique<chs::common::Segment>(glm::inverse(first_expected_transform) * second_expected_transform);
-    auto expected_third_segment = std::make_unique<chs::common::Segment>(glm::inverse(second_expected_transform) * third_expected_transform);
-    
-    expected_second_segment->addChild(std::move(expected_third_segment));
-    expected_first_segment->addChild(std::move(expected_second_segment));
-
-    chs::common::Chain expected_chain{std::move(expected_first_segment)};
+    chs::common::Chain expected_chain{};
+    expected_chain.addNextSegment(chs::common::Segment{first_expected_transform});
+    expected_chain.addNextSegment(chs::common::Segment{glm::inverse(first_expected_transform) * second_expected_transform});
+    expected_chain.addNextSegment(chs::common::Segment{glm::inverse(second_expected_transform) * third_expected_transform});
 
     TestUtils::expectEqual(chain, expected_chain);
 }

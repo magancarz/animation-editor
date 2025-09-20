@@ -35,40 +35,27 @@ namespace chs::common
     {
     public:
         Segment() = default;
-        explicit Segment(const glm::mat4& world_transform);
+        explicit Segment(const glm::mat4& local_transform);
 
-        Segment(const Segment&) = delete;
-        Segment& operator=(const Segment&) = delete;
+        Segment(const Segment&) = default;
+        Segment& operator=(const Segment&) = default;
         Segment(Segment&&) noexcept = default;
         Segment& operator=(Segment&&) noexcept = default;
 
-        void addChild(std::unique_ptr<Segment> child);
+        void addChildSegmentIndex(int child_segment_index);
         void setWorldTransform(const glm::mat4& transform);
         void setLocalTransform(const glm::mat4& transform);
-        void forceWorldTransform(const glm::mat4& transform);
-        void refresh();
 
-        [[nodiscard]] bool hasParent() const { return parent_segment; }
-        [[nodiscard]] Segment& parent();
-        [[nodiscard]] const Segment& parent() const;
-        [[nodiscard]] bool hasChild() const { return child_segment.get(); }
-        [[nodiscard]] Segment& child();
-        [[nodiscard]] const Segment& child() const;
+        [[nodiscard]] const std::vector<int>& childSegmentIndices() const { return child_segments_indices; }
         [[nodiscard]] glm::vec3 worldOrigin() const;
         [[nodiscard]] glm::vec3 worldEnd() const;
         [[nodiscard]] glm::vec3 worldDirection() const;
         [[nodiscard]] const glm::mat4& worldTransform() const { return world_transform; }
         [[nodiscard]] const glm::mat4& localTransform() const { return local_transform; }
         [[nodiscard]] float length() const;
-        [[nodiscard]] std::unique_ptr<Segment> clone() const;
 
     private:
-        [[nodiscard]] glm::mat4 getParentWorldTransform() const;
-        [[nodiscard]] Segment& parentImpl() const;
-        [[nodiscard]] Segment& childImpl() const;
-
-        Segment* parent_segment{};
-        std::unique_ptr<Segment> child_segment{};
+        std::vector<int> child_segments_indices{};
         glm::mat4 world_transform{1.0f};
         glm::mat4 local_transform{1.0f};
     };

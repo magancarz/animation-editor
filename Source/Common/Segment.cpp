@@ -24,100 +24,27 @@
 
 namespace chs::common
 {
-    Segment::Segment(const glm::mat4& world_transform)
-        : world_transform{world_transform}, local_transform{world_transform} {}
+    Segment::Segment(const glm::mat4& local_transform)
+        : world_transform{local_transform}, local_transform{local_transform} {}
 
-    void Segment::addChild(std::unique_ptr<Segment> child)
+    void Segment::addChildSegmentIndex(int child_segment_index)
     {
-        child_segment = std::move(child);
-        child_segment->parent_segment = this;
-        child_segment->setLocalTransform(child_segment->localTransform());
+        child_segments_indices.emplace_back(child_segment_index);
     }
 
     void Segment::setWorldTransform(const glm::mat4& transform)
     {
         world_transform = transform;
-        local_transform = glm::inverse(getParentWorldTransform()) * world_transform;
-
-        if (child_segment)
-        {
-            const glm::mat4 child_new_world_transform = world_transform * child_segment->localTransform();
-            child_segment->setWorldTransform(child_new_world_transform);
-        }
-    }
-
-    glm::mat4 Segment::getParentWorldTransform() const
-    {
-        return parent_segment ? parent_segment->worldTransform() : glm::mat4{1.0f};
     }
 
     void Segment::setLocalTransform(const glm::mat4& transform)
     {
         local_transform = transform;
-        world_transform = getParentWorldTransform() * local_transform;
-
-        if (child_segment)
-        {
-            const glm::mat4 child_new_world_transform = world_transform * child_segment->localTransform();
-            child_segment->setWorldTransform(child_new_world_transform);
-        }
-    }
-
-    void Segment::forceWorldTransform(const glm::mat4& transform)
-    {
-        world_transform = transform;
-    }
-
-    void Segment::Segment::refresh()
-    {
-        local_transform = glm::inverse(getParentWorldTransform()) * world_transform;
-
-        if (child_segment)
-        {
-            child_segment->refresh();
-        }
-    }
-
-    Segment& Segment::parent()
-    {
-        return parentImpl();
-    }
-
-    Segment& Segment::parentImpl() const
-    {
-        assert(hasParent() && "Cannot call 'parent' while the parent is null!");
-        return *parent_segment;
-    }
-
-    const Segment& Segment::parent() const
-    {
-        return parentImpl();
-    }
-
-    Segment& Segment::child()
-    {
-        return childImpl();
-    }
-
-    Segment& Segment::childImpl() const
-    {
-        assert(hasChild() && "Cannot call 'child' while the child is null!");
-        return *child_segment;
-    }
-
-    const Segment& Segment::child() const
-    {
-        return childImpl();
     }
 
     glm::vec3 Segment::worldOrigin() const
     {
-        if (hasParent())
-        {
-            return parent_segment->worldEnd();
-        }
-
-        return glm::vec3{0.0f};
+        return world_transform * glm::inverse(local_transform) * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
     }
 
     glm::vec3 Segment::worldEnd() const
@@ -134,14 +61,5 @@ namespace chs::common
     {
         static constexpr int TRANSLATION_COLUMN_INDEX = 3;
         return glm::length(glm::vec3{local_transform[TRANSLATION_COLUMN_INDEX]});
-    }
-
-    std::unique_ptr<Segment> Segment::clone() const
-    {
-        auto cloned_segment = std::make_unique<Segment>();
-        cloned_segment->world_transform = world_transform;
-        cloned_segment->local_transform = local_transform;
-
-        return cloned_segment;
     }
 }

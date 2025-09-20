@@ -35,16 +35,10 @@ TEST(ChainNormalizerTests, ShouldNormalizeChain)
     glm::mat4 second_segment_world_transform = TestUtils::fromVector(glm::vec3{1.0f, 1.0f, 0.0f});
     glm::mat4 third_segment_world_transform = TestUtils::fromVector(glm::vec3{1.0f, 2.0f, 0.0f});
 
-    auto first_segment = std::make_unique<chs::common::Segment>(first_segment_world_transform);
-    auto second_segment = std::make_unique<chs::common::Segment>(
-        glm::inverse(first_segment_world_transform) * second_segment_world_transform);
-    auto third_segment = std::make_unique<chs::common::Segment>(
-        glm::inverse(second_segment_world_transform) * third_segment_world_transform);
-
-    second_segment->addChild(std::move(third_segment));
-    first_segment->addChild(std::move(second_segment));
-
-    chs::common::Chain chain{std::move(first_segment)};
+    chs::common::Chain chain{};
+    chain.addNextSegment(chs::common::Segment{first_segment_world_transform});
+    chain.addNextSegment(chs::common::Segment{glm::inverse(first_segment_world_transform) * second_segment_world_transform});
+    chain.addNextSegment(chs::common::Segment{glm::inverse(second_segment_world_transform) * third_segment_world_transform});
 
     chs::common::ChainNormalizer chain_normalizer{};
 
@@ -52,5 +46,14 @@ TEST(ChainNormalizerTests, ShouldNormalizeChain)
     chs::common::Chain normalized_chain = chain_normalizer.normalize(chain);
 
     // then
-    printf("aaaa\n");
+    glm::mat4 expected_first_segment_world_transform = TestUtils::fromVector(glm::vec3{0.0f, 0.333333f, 0.0f});
+    glm::mat4 expected_second_segment_world_transform = TestUtils::fromVector(glm::vec3{0.333333f, 0.333333f, 0.0f});
+    glm::mat4 expected_third_segment_world_transform = TestUtils::fromVector(glm::vec3{0.333333f, 0.666666f, 0.0f});
+
+    chs::common::Chain expected_chain{};
+    expected_chain.addNextSegment(chs::common::Segment{expected_first_segment_world_transform});
+    expected_chain.addNextSegment(chs::common::Segment{
+        glm::inverse(expected_first_segment_world_transform) * expected_second_segment_world_transform});
+    expected_chain.addNextSegment(chs::common::Segment{
+        glm::inverse(expected_second_segment_world_transform) * expected_third_segment_world_transform});
 }

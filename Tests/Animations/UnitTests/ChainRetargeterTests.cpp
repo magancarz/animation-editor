@@ -33,23 +33,18 @@ TEST(ChainRetargeterTests, ShouldRetargetTargetChainFromGivenSourceChain)
     glm::mat4 source_chain_first_segment_world_transform = TestUtils::fromVector(glm::vec3{0.0f, 1.0f, 0.0f});
     glm::mat4 source_chain_second_segment_world_transform = TestUtils::fromVector(glm::vec3{1.0f, 1.0f, 0.0f});
 
-    auto source_chain_first_segment = std::make_unique<chs::common::Segment>(source_chain_first_segment_world_transform);
-    auto source_chain_second_segment = std::make_unique<chs::common::Segment>(
-        glm::inverse(source_chain_first_segment_world_transform) * source_chain_second_segment_world_transform);
-
-    source_chain_first_segment->addChild(std::move(source_chain_second_segment));
+    chs::common::Chain source_chain{};
+    source_chain.addNextSegment(chs::common::Segment{source_chain_first_segment_world_transform});
+    source_chain.addNextSegment(chs::common::Segment{
+        glm::inverse(source_chain_first_segment_world_transform) * source_chain_second_segment_world_transform});
 
     glm::mat4 target_chain_first_segment_world_transform = TestUtils::fromVector(glm::vec3{1.0f, 0.0f, 0.0f});
     glm::mat4 target_chain_second_segment_world_transform = TestUtils::fromVector(glm::vec3{2.0f, 0.0f, 0.0f});
 
-    auto target_chain_first_segment = std::make_unique<chs::common::Segment>(target_chain_first_segment_world_transform);
-    auto target_chain_second_segment = std::make_unique<chs::common::Segment>(
-        glm::inverse(target_chain_first_segment_world_transform) * target_chain_second_segment_world_transform);
-
-    target_chain_first_segment->addChild(std::move(target_chain_second_segment));
-
-    chs::common::Chain source_chain{std::move(source_chain_first_segment)};
-    chs::common::Chain target_chain{std::move(target_chain_first_segment)};
+    chs::common::Chain target_chain{};
+    target_chain.addNextSegment(chs::common::Segment{target_chain_first_segment_world_transform});
+    target_chain.addNextSegment(chs::common::Segment{
+        glm::inverse(target_chain_first_segment_world_transform) * target_chain_second_segment_world_transform});
 
     chs::anim::ChainRetargeter chain_retargeter{};
 

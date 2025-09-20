@@ -24,27 +24,50 @@
 
 #include <iostream>
 
-#include "Common/ConstChainIterator.h"
-
 namespace chs::common
 {
-    Chain::Chain(std::unique_ptr<Segment> chain_root)
-        : chain_root{std::move(chain_root)} {}
+    void Chain::addNextSegment(Segment segment)
+    {
+        if (!empty())
+        {
+            Segment& last_segment = last();
+            last_segment.addChildSegmentIndex(static_cast<int>(chain_segments.size()));
+            segment.setWorldTransform(last_segment.worldTransform() * segment.localTransform());
+        }
+        chain_segments.emplace_back(std::move(segment));
+    }
+
+    void Chain::refreshLocalTransforms()
+    {
+        glm::mat4 previous_world_transform{1.0f};
+        for (auto& segment : chain_segments)
+        {
+            segment.setLocalTransform(glm::inverse(previous_world_transform) * segment.worldTransform());
+            previous_world_transform = segment.worldTransform();
+        }
+    }
+
+    void Chain::refreshWorldTransforms()
+    {
+        glm::mat4 previous_world_transform{1.0f};
+        for (auto& segment : chain_segments)
+        {
+            segment.setWorldTransform(previous_world_transform * segment.localTransform());
+            previous_world_transform = segment.worldTransform();
+        }
+    }
 
     float Chain::length() const
     {
-        if (!chain_root)
+        if (empty())
         {
             return 0.0f;
         }
 
-        float total_length = chain_root->length();
-        Segment* current_segment = chain_root.get();
-        while (current_segment->hasChild())
+        float total_length = 0.0f;
+        for (const auto& segment : chain_segments)
         {
-            Segment* next_segment = &current_segment->child();
-            total_length += next_segment->length();
-            current_segment = next_segment;
+            total_length += segment.length();
         }
 
         return total_length;
@@ -52,78 +75,55 @@ namespace chs::common
 
     Segment& Chain::first()
     {
-        return firstImpl();
-    }
-
-    Segment& Chain::firstImpl() const
-    {
-        assert(chain_root && "Cannot call 'first' while the chain is empty!");
-        return *chain_root;
+        return chain_segments.front();
     }
 
     const Segment& Chain::first() const
     {
-        return firstImpl();
+        return chain_segments.front();
     }
 
     Segment& Chain::last()
     {
-        return lastImpl();
-    }
-
-    Segment& Chain::lastImpl() const
-    {
-        assert(chain_root && "Cannot call 'last' while the chain is empty!");
-
-        Segment* current_segment = chain_root.get();
-        while (current_segment->hasChild())
-        {
-            Segment* next_segment = &current_segment->child();
-            current_segment = next_segment;
-        }
-
-        return *current_segment;
+        return chain_segments.back();
     }
 
     const Segment& Chain::last() const
     {
-        return lastImpl();
+        return chain_segments.back();
     }
 
     glm::vec3 Chain::locationAt(float distance_from_origin) const
     {
-        if (!chain_root)
+        if (empty())
         {
             return glm::vec3{0.0f};
         }
 
         float current_distance = 0.0f;
-        const Segment* current_segment = chain_root.get();
-        while (current_segment)
+        for (const auto& segment : chain_segments)
         {
-            const float current_segment_length = current_segment->length();
+            const float current_segment_length = segment.length();
             current_distance += current_segment_length;
             if (current_distance >= distance_from_origin)
             {
                 const float segment_base_distance = current_distance - current_segment_length;
                 const float segment_part = (distance_from_origin - segment_base_distance) / current_segment_length;
-                const glm::vec3 segment_direction = current_segment->worldDirection();
-                return current_segment->worldOrigin() + segment_direction * segment_part;
+                const glm::vec3 segment_direction = segment.worldDirection();
+                return segment.worldOrigin() + segment_direction * segment_part;
             }
-
-            current_segment = current_segment->hasChild() ? &current_segment->child() : nullptr;
         }
 
-        return current_segment->worldEnd();
+        return last().worldEnd();
     }
 
     glm::vec3 Chain::worldOrigin() const
     {
-        if (!chain_root)
+        if (empty())
         {
             return glm::vec3{0.0f};
         }
 
-        return chain_root->worldOrigin();
+        return first().worldOrigin();
     }
 }

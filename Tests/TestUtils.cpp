@@ -25,8 +25,6 @@
 #include <gtest/gtest.h>
 #include <glm/gtx/quaternion.hpp>
 
-#include "Common/ConstChainIterator.h"
-
 glm::mat4 TestUtils::fromVector(const glm::vec3& vector)
 {
     glm::mat4 rotation = glm::toMat4(glm::quat{glm::vec3{0, 1, 0}, glm::normalize(vector)});
@@ -36,15 +34,12 @@ glm::mat4 TestUtils::fromVector(const glm::vec3& vector)
 
 void TestUtils::expectEqual(const chs::common::Chain& first, const chs::common::Chain& second, float precision)
 {
-    chs::common::ConstChainIterator first_chain_iterator{first};
-    chs::common::ConstChainIterator second_chain_iterator{second};
+    EXPECT_EQ(first.size(), second.size());
 
-    while (first_chain_iterator.hasNext() && second_chain_iterator.hasNext())
+    for (int segment_index = 0; segment_index < first.size(); ++segment_index)
     {
-        expectEqual(first_chain_iterator.next(), second_chain_iterator.next(), precision);
+        expectEqual(first.at(segment_index), second.at(segment_index), precision);
     }
-
-    EXPECT_TRUE(!first_chain_iterator.hasNext() && !second_chain_iterator.hasNext());
 }
 
 void TestUtils::expectEqual(const chs::common::Segment& first, const chs::common::Segment& second, float precision)
