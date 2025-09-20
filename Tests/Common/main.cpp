@@ -20,38 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include <gtest/gtest.h>
 
-#include <vector>
-
-#include "Common/Segment.h"
-
-namespace chs::common
+int main(int argc, char** argv)
 {
-    class Chain
-    {
-    public:
-        Chain() = default;
-        explicit Chain(std::unique_ptr<Segment> chain_root);
-
-        Chain(const Chain&) = delete;
-        Chain& operator=(const Chain&) = delete;
-        Chain(Chain&&) noexcept = default;
-        Chain& operator=(Chain&&) noexcept = default;
-
-        [[nodiscard]] float length() const;
-        [[nodiscard]] bool empty() const { return !chain_root; }
-        [[nodiscard]] Segment& first();
-        [[nodiscard]] const Segment& first() const;
-        [[nodiscard]] Segment& last();
-        [[nodiscard]] const Segment& last() const;
-        [[nodiscard]] glm::vec3 locationAt(float distance_from_origin) const;
-        [[nodiscard]] glm::vec3 worldOrigin() const;
-
-    private:
-        Segment& firstImpl() const;
-        Segment& lastImpl() const;
-
-        std::unique_ptr<Segment> chain_root;
-    };
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

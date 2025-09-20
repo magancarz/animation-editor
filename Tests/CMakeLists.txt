@@ -25,12 +25,36 @@ include(GoogleTest)
 
 enable_testing()
 if(BUILD_TESTING)
-    file(GLOB_RECURSE CHAOS_IK_TESTS_SOURCES InverseKinematics/*.cpp)
+    file(GLOB_RECURSE CHAOS_IK_TESTS_SOURCES InverseKinematics/*.cpp TestUtils.cpp)
 	add_executable(chaos-inverse-kinematics-tests InverseKinematics/main.cpp ${CHAOS_IK_TESTS_SOURCES})
-	target_link_libraries(chaos-inverse-kinematics-tests chaos-inverse-kinematics)
-	target_link_libraries(chaos-inverse-kinematics-tests GTest::gtest_main)
-	target_link_libraries(chaos-inverse-kinematics-tests GTest::gmock)
-	target_include_directories(chaos-inverse-kinematics-tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/InverseKinematics)
-
+	target_link_libraries(chaos-inverse-kinematics-tests
+		chaos-inverse-kinematics
+		GTest::gtest_main
+		GTest::gmock)
+	target_include_directories(chaos-inverse-kinematics-tests PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}/InverseKinematics)
 	add_test(NAME chaos-inverse-kinematics-tests-all COMMAND chaos-inverse-kinematics-tests)
+
+    file(GLOB_RECURSE CHAOS_ANIMATIONS_COMMON_TESTS_SOURCES Common/*.cpp TestUtils.cpp)
+	add_executable(chaos-animations-common-tests Common/main.cpp ${CHAOS_ANIMATIONS_COMMON_TESTS_SOURCES})
+	target_link_libraries(chaos-animations-common-tests
+		chaos-animations-common
+		GTest::gtest_main
+		GTest::gmock)
+	target_include_directories(chaos-animations-common-tests PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_SOURCE_DIR}/Include/)
+	add_test(NAME chaos-animations-common-tests-all COMMAND chaos-animations-common-tests)
+
+    file(GLOB_RECURSE CHAOS_ANIMATION_TESTS_SOURCES Animations/*.cpp TestUtils.cpp)
+	add_executable(chaos-animations-tests Animations/main.cpp ${CHAOS_ANIMATION_TESTS_SOURCES})
+	target_link_libraries(chaos-animations-tests
+		chaos-animations
+		GTest::gtest_main
+		GTest::gmock)
+	target_include_directories(chaos-animations-tests PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_SOURCE_DIR}/Include/)
+	add_test(NAME chaos-animations-tests-all COMMAND chaos-animations-tests)
 endif()

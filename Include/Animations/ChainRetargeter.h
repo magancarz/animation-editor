@@ -24,34 +24,32 @@
 
 #include <vector>
 
-#include "Common/Segment.h"
+#include "Common/Chain.h"
+#include "Common/Effector.h"
 
-namespace chs::common
+namespace chs::anim
 {
-    class Chain
+    class ChainRetargeter
     {
     public:
-        Chain() = default;
-        explicit Chain(std::unique_ptr<Segment> chain_root);
+        ChainRetargeter() = default;
 
-        Chain(const Chain&) = delete;
-        Chain& operator=(const Chain&) = delete;
-        Chain(Chain&&) noexcept = default;
-        Chain& operator=(Chain&&) noexcept = default;
+        ChainRetargeter(const ChainRetargeter&) = default;
+        ChainRetargeter& operator=(const ChainRetargeter&) = default;
+        ChainRetargeter(ChainRetargeter&&) noexcept = default;
+        ChainRetargeter& operator=(ChainRetargeter&&) noexcept = default;
 
-        [[nodiscard]] float length() const;
-        [[nodiscard]] bool empty() const { return !chain_root; }
-        [[nodiscard]] Segment& first();
-        [[nodiscard]] const Segment& first() const;
-        [[nodiscard]] Segment& last();
-        [[nodiscard]] const Segment& last() const;
-        [[nodiscard]] glm::vec3 locationAt(float distance_from_origin) const;
-        [[nodiscard]] glm::vec3 worldOrigin() const;
+        void retarget(const chs::common::Chain& source, chs::common::Chain& target) const;
 
     private:
-        Segment& firstImpl() const;
-        Segment& lastImpl() const;
-
-        std::unique_ptr<Segment> chain_root;
+        [[nodiscard]] std::vector<chs::common::Effector> pickEffectorsFromSourceChain(
+            const chs::common::Chain& normalized_source_chain,
+            const chs::common::Chain& normalized_target_chain) const;
+        void applyForwardReachingPass(
+            chs::common::Chain& normalized_target_chain,
+            const std::vector<chs::common::Effector>& effectors) const;
+        void applyRetargetedChainOntoTarget(
+            const chs::common::Chain& normalized_target_chain,
+            chs::common::Chain& target_chain) const;
     };
 }

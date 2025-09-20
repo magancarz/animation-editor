@@ -26,10 +26,20 @@ project(animation-editor LANGUAGES C CXX)
 
 add_subdirectory(ThirdParty)
 
-file(GLOB_RECURSE CHAOS_IK_SOURCES Source/InverseKinematics/*.cpp Source/Common/*.cpp)
+file(GLOB_RECURSE CHAOS_ANIMATIONS_COMMON_SOURCES Source/Common/*.cpp)
+add_library(chaos-animations-common STATIC ${CHAOS_ANIMATIONS_COMMON_SOURCES})
+target_include_directories(chaos-animations-common PUBLIC Include)
+target_link_libraries(chaos-animations-common glm::glm)
+
+file(GLOB_RECURSE CHAOS_IK_SOURCES Source/InverseKinematics/*.cpp)
 add_library(chaos-inverse-kinematics STATIC ${CHAOS_IK_SOURCES})
 target_include_directories(chaos-inverse-kinematics PUBLIC Include)
-target_link_libraries(chaos-inverse-kinematics glm::glm)
+target_link_libraries(chaos-inverse-kinematics chaos-animations-common)
+
+file(GLOB_RECURSE CHAOS_ANIMATIONS_SOURCES Source/Animations/*.cpp)
+add_library(chaos-animations STATIC ${CHAOS_ANIMATIONS_SOURCES})
+target_include_directories(chaos-animations PUBLIC Include)
+target_link_libraries(chaos-animations chaos-animations-common)
 
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 

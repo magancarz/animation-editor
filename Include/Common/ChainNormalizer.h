@@ -22,36 +22,29 @@
 
 #pragma once
 
-#include <vector>
-
-#include "Common/Segment.h"
+#include "Common/Chain.h"
 
 namespace chs::common
 {
-    class Chain
+    class ChainNormalizer
     {
     public:
-        Chain() = default;
-        explicit Chain(std::unique_ptr<Segment> chain_root);
+        ChainNormalizer() = default;
 
-        Chain(const Chain&) = delete;
-        Chain& operator=(const Chain&) = delete;
-        Chain(Chain&&) noexcept = default;
-        Chain& operator=(Chain&&) noexcept = default;
+        ChainNormalizer(const ChainNormalizer&) = default;
+        ChainNormalizer& operator=(const ChainNormalizer&) = default;
+        ChainNormalizer(ChainNormalizer&&) noexcept = default;
+        ChainNormalizer& operator=(ChainNormalizer&&) noexcept = default;
 
-        [[nodiscard]] float length() const;
-        [[nodiscard]] bool empty() const { return !chain_root; }
-        [[nodiscard]] Segment& first();
-        [[nodiscard]] const Segment& first() const;
-        [[nodiscard]] Segment& last();
-        [[nodiscard]] const Segment& last() const;
-        [[nodiscard]] glm::vec3 locationAt(float distance_from_origin) const;
-        [[nodiscard]] glm::vec3 worldOrigin() const;
+        [[nodiscard]] Chain normalize(const Chain& chain) const;
 
     private:
-        Segment& firstImpl() const;
-        Segment& lastImpl() const;
-
-        std::unique_ptr<Segment> chain_root;
+        [[nodiscard]] Chain recursivelyNormalizeChain(const Chain& chain) const;
+        [[nodiscard]] std::unique_ptr<Segment> recursivelyNormalizeChain(
+            const float chain_total_length,
+            const Segment& segment) const;
+        [[nodiscard]] std::unique_ptr<Segment> normalizeSegment(
+            const float chain_total_length,
+            const Segment& segment) const;
     };
 }

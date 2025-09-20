@@ -25,7 +25,6 @@
 #include <memory>
 
 #include "TestUtils.h"
-
 #include "InverseKinematics/FABRIKSolver.h"
 
 TEST(FABRIKSolverTests, ShouldReturnEarlyWhenTheChainIsEmpty)

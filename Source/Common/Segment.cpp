@@ -125,9 +125,23 @@ namespace chs::common
         return world_transform * glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
     }
 
+    glm::vec3 Segment::worldDirection() const
+    {
+        return worldEnd() - worldOrigin();
+    }
+
     float Segment::length() const
     {
         static constexpr int TRANSLATION_COLUMN_INDEX = 3;
         return glm::length(glm::vec3{local_transform[TRANSLATION_COLUMN_INDEX]});
+    }
+
+    std::unique_ptr<Segment> Segment::clone() const
+    {
+        auto cloned_segment = std::make_unique<Segment>();
+        cloned_segment->world_transform = world_transform;
+        cloned_segment->local_transform = local_transform;
+
+        return cloned_segment;
     }
 }

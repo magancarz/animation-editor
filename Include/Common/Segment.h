@@ -56,9 +56,11 @@ namespace chs::common
         [[nodiscard]] const Segment& child() const;
         [[nodiscard]] glm::vec3 worldOrigin() const;
         [[nodiscard]] glm::vec3 worldEnd() const;
+        [[nodiscard]] glm::vec3 worldDirection() const;
         [[nodiscard]] const glm::mat4& worldTransform() const { return world_transform; }
         [[nodiscard]] const glm::mat4& localTransform() const { return local_transform; }
         [[nodiscard]] float length() const;
+        [[nodiscard]] std::unique_ptr<Segment> clone() const;
 
     private:
         [[nodiscard]] glm::mat4 getParentWorldTransform() const;
