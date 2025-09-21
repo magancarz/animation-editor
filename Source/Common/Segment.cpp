@@ -26,6 +26,9 @@ namespace chs::common
 {
     Segment::Segment(const glm::mat4& local_transform)
         : world_transform{local_transform}, local_transform{local_transform} {}
+    
+    Segment::Segment(std::string name, const glm::mat4& local_transform)
+        : segment_name{std::move(name)}, world_transform{local_transform}, local_transform{local_transform} {}
 
     void Segment::addChildSegmentIndex(int child_segment_index)
     {

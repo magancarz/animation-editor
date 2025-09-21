@@ -55,6 +55,7 @@ if(BUILD_TESTING)
 		GTest::gmock)
 	target_include_directories(chaos-animations-tests PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}/Animations/
 		${CMAKE_SOURCE_DIR}/Include/)
 	add_test(NAME chaos-animations-tests-all COMMAND chaos-animations-tests)
 endif()

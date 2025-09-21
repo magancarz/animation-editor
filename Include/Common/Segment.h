@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 #include <glm/glm.hpp>
 
@@ -36,6 +37,7 @@ namespace chs::common
     public:
         Segment() = default;
         explicit Segment(const glm::mat4& local_transform);
+        Segment(std::string name, const glm::mat4& local_transform);
 
         Segment(const Segment&) = default;
         Segment& operator=(const Segment&) = default;
@@ -47,6 +49,7 @@ namespace chs::common
         void setLocalTransform(const glm::mat4& transform);
 
         [[nodiscard]] const std::vector<int>& childSegmentIndices() const { return child_segments_indices; }
+        [[nodiscard]] const std::string& name() const { return segment_name; }
         [[nodiscard]] glm::vec3 worldOrigin() const;
         [[nodiscard]] glm::vec3 worldEnd() const;
         [[nodiscard]] glm::vec3 worldDirection() const;
@@ -56,6 +59,7 @@ namespace chs::common
 
     private:
         std::vector<int> child_segments_indices{};
+        std::string segment_name{};
         glm::mat4 world_transform{1.0f};
         glm::mat4 local_transform{1.0f};
     };
