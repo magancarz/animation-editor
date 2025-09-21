@@ -24,13 +24,19 @@
 
 #include <algorithm>
 
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 namespace chs::assets
 {
     ImportedAssets AnimationAssetLoader::importAssets(
         const std::vector<SkeletonAssetInfo>& skeleton_asset_infos,
+        const std::vector<AnimationAssetInfo>& animations_asset_infos,
         const std::filesystem::path& file_path) const
     {
         Assimp::Importer importer;
+
+        importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 
         const aiScene* scene = importer.ReadFile(file_path, aiProcess_PopulateArmatureData);
 
@@ -40,15 +46,17 @@ namespace chs::assets
             return {};
         }
 
-        return importAssetsImpl(skeleton_asset_infos, scene);
+        return importAssetsImpl(skeleton_asset_infos, animations_asset_infos, scene);
     }
 
     ImportedAssets AnimationAssetLoader::importAssetsImpl(
         const std::vector<SkeletonAssetInfo>& skeleton_asset_infos,
+        const std::vector<AnimationAssetInfo>& animations_asset_infos,
         const aiScene* scene) const
     {
         ImportedAssets imported_assets{};
         imported_assets.skeletons = searchForSkeletons(skeleton_asset_infos, scene->mRootNode);
+        imported_assets.animations = importAnimations(animations_asset_infos, scene);
 
         return imported_assets;
     }
@@ -173,5 +181,149 @@ namespace chs::assets
         result_matrix[2] = glm::vec4{ai_transform.a3, ai_transform.b3, ai_transform.c3, ai_transform.d3};
         result_matrix[3] = glm::vec4{ai_transform.a4, ai_transform.b4, ai_transform.c4, ai_transform.d4};
         return result_matrix;
+    }
+
+    std::vector<chs::anim::Animation> AnimationAssetLoader::importAnimations(
+        const std::vector<AnimationAssetInfo>& animation_asset_infos,
+        const aiScene* scene) const
+    {
+        if (!scene->HasAnimations())
+        {
+            return {};
+        }
+
+        std::vector<chs::anim::Animation> found_animations;
+        for (int index = 0; index < scene->mNumAnimations; ++index)
+        {
+            const aiAnimation* ai_animation = scene->mAnimations[index];
+            std::optional<AnimationAssetInfo> animation_asset_info = 
+                findMatchingAnimationAssetInfo(animation_asset_infos, ai_animation);
+            if (animation_asset_info.has_value())
+            {
+                found_animations.emplace_back(
+                    importAnimation(
+                        animation_asset_info.value(),
+                        ai_animation));
+            }
+        }
+
+        return found_animations;
+    }
+
+    std::optional<AnimationAssetInfo> AnimationAssetLoader::findMatchingAnimationAssetInfo(
+        const std::vector<AnimationAssetInfo>& animation_asset_infos,
+        const aiAnimation* animation) const
+    {
+        std::string animation_name = importName(animation->mName);
+        for (const auto& animation_asset_info : animation_asset_infos)
+        {
+            if (animation_asset_info.animation_name == animation_name)
+            {
+                return animation_asset_info;
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    chs::anim::Animation AnimationAssetLoader::importAnimation(
+        const AnimationAssetInfo& animation_asset_info,
+        const aiAnimation* ai_animation) const
+    {
+        chs::anim::Animation animation{};
+        animation.name = animation_asset_info.mapped_name;
+        animation.duration = static_cast<float>(ai_animation->mDuration);
+        animation.frames_per_second = static_cast<float>(ai_animation->mTicksPerSecond);
+        animation.num_of_frames = static_cast<int>(std::round(animation.duration * animation.frames_per_second));
+        animation.num_of_segments = ai_animation->mNumChannels;
+
+        for (int channel_index = 0; channel_index < ai_animation->mNumChannels; ++channel_index)
+        {
+            chs::anim::AnimationChannel imported_channel = importAnimationChannel(
+                animation,
+                ai_animation->mChannels[channel_index]);
+            std::string target_segment_name = imported_channel.segment_name;
+            animation.channels.try_emplace(std::move(target_segment_name), std::move(imported_channel));
+        }
+        
+        return animation;
+    }
+
+    chs::anim::AnimationChannel AnimationAssetLoader::importAnimationChannel(
+        const chs::anim::Animation& target_animation,
+        const aiNodeAnim* ai_animation_channel) const
+    {
+        chs::anim::AnimationChannel animation_channel{};
+        animation_channel.segment_name = importName(ai_animation_channel->mNodeName);
+
+        unsigned int position_key_index = std::min(1u, ai_animation_channel->mNumPositionKeys - 1);
+        aiVectorKey current_position_key = ai_animation_channel->mPositionKeys[0];
+        aiVectorKey next_position_key = ai_animation_channel->mPositionKeys[position_key_index];
+
+        unsigned int rotation_key_index = std::min(1u, ai_animation_channel->mNumRotationKeys - 1);
+        aiQuatKey current_rotation_key = ai_animation_channel->mRotationKeys[0];
+        aiQuatKey next_rotation_key = ai_animation_channel->mRotationKeys[rotation_key_index];
+
+        const float frame_delta_time = 1.0f / target_animation.frames_per_second;
+        float current_time = 0.0f;
+        animation_channel.key_frames.reserve(target_animation.num_of_frames);
+        while (current_time < target_animation.duration)
+        {
+            if (position_key_index != ai_animation_channel->mNumPositionKeys)
+            {
+                aiVectorKey position_key = ai_animation_channel->mPositionKeys[position_key_index + 1];
+                if (position_key.mTime <= current_time)
+                {
+                    current_position_key = next_position_key;
+                    next_position_key = position_key;
+                    position_key_index += 1;
+                }
+            }
+            auto position_interpolation_t = static_cast<float>((current_time - current_position_key.mTime) /
+                (next_position_key.mTime - current_position_key.mTime));
+            aiVector3D interpolated_position{};
+            Assimp::Interpolator<aiVectorKey>{}(
+                interpolated_position,
+                current_position_key,
+                next_position_key,
+                position_interpolation_t);
+
+            glm::vec3 position{interpolated_position.x, interpolated_position.y, interpolated_position.z};
+            glm::mat4 translation = glm::translate(glm::mat4{1.0f}, position);
+
+            if (rotation_key_index != ai_animation_channel->mNumRotationKeys)
+            {
+                aiQuatKey rotation_key = ai_animation_channel->mRotationKeys[rotation_key_index + 1];
+                if (rotation_key.mTime <= current_time)
+                {
+                    current_rotation_key = next_rotation_key;
+                    next_rotation_key = rotation_key;
+                    rotation_key_index += 1;
+                }
+            }
+            auto rotation_interpolation_t = static_cast<float>((current_time - current_rotation_key.mTime) /
+                (next_rotation_key.mTime - current_rotation_key.mTime));
+            aiQuaternion interpolated_rotation{};
+            Assimp::Interpolator<aiQuatKey>{}(
+                interpolated_rotation,
+                current_rotation_key,
+                next_rotation_key,
+                rotation_interpolation_t);
+
+            glm::quat rotation{};
+            rotation.x = interpolated_rotation.x;
+            rotation.y = interpolated_rotation.y;
+            rotation.z = interpolated_rotation.z;
+            rotation.w = interpolated_rotation.w;
+
+            chs::anim::KeyFrame key_frame{};
+            key_frame.time = current_time;
+            key_frame.local_transform = translation * glm::toMat4(rotation);
+            animation_channel.key_frames.emplace_back(key_frame);
+
+            current_time += frame_delta_time;
+        }
+
+        return animation_channel;
     }
 }

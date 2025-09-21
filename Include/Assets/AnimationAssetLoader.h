@@ -28,12 +28,15 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/anim.h>
 
 #include <glm/glm.hpp>
 
 #include "Common/Skeleton.h"
+#include "Animations/Animation.h"
 #include "ImportedAssets.h"
 #include "SkeletonAssetInfo.h"
+#include "AnimationAssetInfo.h"
 
 namespace chs::assets
 {
@@ -42,11 +45,13 @@ namespace chs::assets
     public:
         [[nodiscard]] ImportedAssets importAssets(
             const std::vector<SkeletonAssetInfo>& skeleton_asset_infos,
+            const std::vector<AnimationAssetInfo>& animations_asset_infos,
             const std::filesystem::path& file_path) const;
 
     private:
         [[nodiscard]] ImportedAssets importAssetsImpl(
             const std::vector<SkeletonAssetInfo>& skeleton_asset_infos,
+            const std::vector<AnimationAssetInfo>& animations_asset_infos,
             const aiScene* scene) const;
         [[nodiscard]] std::vector<chs::common::Skeleton> searchForSkeletons(
             const std::vector<SkeletonAssetInfo>& skeleton_asset_infos,
@@ -65,5 +70,17 @@ namespace chs::assets
             const aiNode* current_skeleton_node) const;
         [[nodiscard]] std::string removePrefix(std::string name, int prefix_size) const;
         [[nodiscard]] glm::mat4 importTransform(const aiMatrix4x4& ai_transform) const;
+        [[nodiscard]] std::vector<chs::anim::Animation> importAnimations(
+            const std::vector<AnimationAssetInfo>& animation_asset_infos,
+            const aiScene* scene) const;
+        [[nodiscard]] std::optional<AnimationAssetInfo> findMatchingAnimationAssetInfo(
+            const std::vector<AnimationAssetInfo>& animation_asset_infos,
+            const aiAnimation* animation) const;
+        [[nodiscard]] chs::anim::Animation importAnimation(
+            const AnimationAssetInfo& animation_asset_info,
+            const aiAnimation* ai_animation) const;
+        [[nodiscard]] chs::anim::AnimationChannel importAnimationChannel(
+            const chs::anim::Animation& target_animation,
+            const aiNodeAnim* ai_animation_channel) const;
     };
 }

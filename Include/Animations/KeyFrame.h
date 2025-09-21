@@ -22,13 +22,15 @@
 
 #pragma once
 
-#include "Common/Skeleton.h"
+#include <string>
 
-namespace chs::assets
+#include <glm/glm.hpp>
+
+namespace chs::anim
 {
-    struct ImportedAssets
+    struct KeyFrame
     {
-        std::vector<chs::common::Skeleton> skeletons{};
-        std::vector<chs::anim::Animation> animations{};
+        float time{0.0f};
+        glm::mat4 local_transform{1.0f};
     };
 }

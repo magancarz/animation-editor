@@ -22,13 +22,16 @@
 
 #pragma once
 
-#include "Common/Skeleton.h"
+#include <string>
+#include <vector>
 
-namespace chs::assets
+#include "KeyFrame.h"
+
+namespace chs::anim
 {
-    struct ImportedAssets
+    struct AnimationChannel
     {
-        std::vector<chs::common::Skeleton> skeletons{};
-        std::vector<chs::anim::Animation> animations{};
+        std::string segment_name{};
+        std::vector<KeyFrame> key_frames{};
     };
 }

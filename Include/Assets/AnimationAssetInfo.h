@@ -22,13 +22,13 @@
 
 #pragma once
 
-#include "Common/Skeleton.h"
+#include <string>
 
 namespace chs::assets
 {
-    struct ImportedAssets
+    struct AnimationAssetInfo
     {
-        std::vector<chs::common::Skeleton> skeletons{};
-        std::vector<chs::anim::Animation> animations{};
+        std::string animation_name{};
+        std::string mapped_name{};
     };
 }
