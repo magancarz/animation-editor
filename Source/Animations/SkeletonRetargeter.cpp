@@ -29,7 +29,7 @@ namespace chs::anim
     SkeletonRetargeter::SkeletonRetargeter(SkeletonRetargetingConfig skeleton_retargeting_config)
         : skeleton_retargeting_config{std::move(skeleton_retargeting_config)} {}
 
-    void SkeletonRetargeter::retarget(const Skeleton& source_skeleton, Skeleton& target_skeleton) const
+    void SkeletonRetargeter::retarget(const chs::common::Skeleton& source_skeleton, chs::common::Skeleton& target_skeleton) const
     {
         for (const auto& chain_mapping : skeleton_retargeting_config.chain_mappings)
         {
@@ -39,8 +39,8 @@ namespace chs::anim
 
     void SkeletonRetargeter::retargetChain(
             const ChainMapping& chain_mapping,
-            const Skeleton& source_skeleton,
-            Skeleton& target_skeleton) const
+            const chs::common::Skeleton& source_skeleton,
+            chs::common::Skeleton& target_skeleton) const
     {
         int first_segment_index = target_skeleton.indexOf(chain_mapping.target_first_segment);
         const chs::common::Segment& base_segment = target_skeleton.at(first_segment_index);
@@ -67,7 +67,7 @@ namespace chs::anim
     chs::common::Chain SkeletonRetargeter::extractChainFromSkeleton(
         const std::string& first_segment_name,
         const std::string& last_segment_name,
-        const Skeleton& skeleton,
+        const chs::common::Skeleton& skeleton,
         const glm::mat4& chain_inverse_transform) const
     {
         int first_segment_index = skeleton.indexOf(first_segment_name);
@@ -89,7 +89,7 @@ namespace chs::anim
 
     void SkeletonRetargeter::applyRetargetedChainOntoSkeleton(
         const chs::common::Chain& retargeted_chain,
-        Skeleton& skeleton) const
+        chs::common::Skeleton& skeleton) const
     {
         int first_segment_index = skeleton.indexOf(retargeted_chain.first().name());
         int last_segment_index = skeleton.indexOf(retargeted_chain.last().name());

@@ -23,12 +23,16 @@
 #pragma once
 
 #include "Common/Chain.h"
+#include "Common/Skeleton.h"
+#include "SegmentEntry.h"
 
 class TestUtils
 {
 public:
     static glm::mat4 fromVector(const glm::vec3& translation);
+    static chs::common::Skeleton createSkeleton(const std::vector<SegmentEntry>& segment_entries);
 
+    static void expectEqual(const chs::common::Skeleton& first, const chs::common::Skeleton& second, float precision = 0.001f);
     static void expectEqual(const chs::common::Chain& first, const chs::common::Chain& second, float precision = 0.001f);
     static void expectEqual(const chs::common::Segment& first, const chs::common::Segment& second, float precision = 0.001f);
     static void expectEqual(const glm::vec3& first, const glm::vec3& second, float precision = 0.001f);

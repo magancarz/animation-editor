@@ -23,8 +23,8 @@
 #pragma once
 
 #include "Common/Chain.h"
+#include "Common/Skeleton.h"
 #include "SkeletonRetargetingConfig.h"
-#include "Skeleton.h"
 
 namespace chs::anim
 {
@@ -39,22 +39,22 @@ namespace chs::anim
         SkeletonRetargeter(SkeletonRetargeter&&) noexcept = default;
         SkeletonRetargeter& operator=(SkeletonRetargeter&&) noexcept = default;
 
-        void retarget(const Skeleton& source_skeleton, Skeleton& target_skeleton) const;
+        void retarget(const chs::common::Skeleton& source_skeleton, chs::common::Skeleton& target_skeleton) const;
 
     private:
         SkeletonRetargetingConfig skeleton_retargeting_config{};
 
         void retargetChain(
             const ChainMapping& chain_mapping,
-            const Skeleton& source_skeleton,
-            Skeleton& target_skeleton) const;
+            const chs::common::Skeleton& source_skeleton,
+            chs::common::Skeleton& target_skeleton) const;
         [[nodiscard]] chs::common::Chain extractChainFromSkeleton(
             const std::string& first_segment_name,
             const std::string& last_segment_name,
-            const Skeleton& skeleton,
+            const chs::common::Skeleton& skeleton,
             const glm::mat4& chain_inverse_transform) const;
         void applyRetargetedChainOntoSkeleton(
             const chs::common::Chain& retargeted_chain,
-            Skeleton& skeleton) const;
+            chs::common::Skeleton& skeleton) const;
     };
 }

@@ -24,9 +24,9 @@
 
 #include <unordered_map>
 
-#include "Common/Chain.h"
+#include "Chain.h"
 
-namespace chs::anim
+namespace chs::common
 {
     class Skeleton
     {
@@ -35,23 +35,23 @@ namespace chs::anim
         static constexpr int ROOT_SEGMENT_INDEX = 0;
 
         Skeleton() = default;
-        explicit Skeleton(std::vector<chs::common::Segment> segments);
+        explicit Skeleton(std::vector<Segment> segments);
 
         void refreshWorldTransforms();
 
         [[nodiscard]] bool empty() const { return skeleton_segments.empty(); }
         [[nodiscard]] int size() const { return static_cast<int>(skeleton_segments.size()); }
-        [[nodiscard]] chs::common::Segment& at(int index) { return skeleton_segments.at(index); }
-        [[nodiscard]] const chs::common::Segment& at(int index) const { return skeleton_segments.at(index); }
-        [[nodiscard]] std::vector<chs::common::Segment>& segments() { return skeleton_segments; }
-        [[nodiscard]] const std::vector<chs::common::Segment>& segments() const { return skeleton_segments; }
+        [[nodiscard]] Segment& at(int index) { return skeleton_segments.at(index); }
+        [[nodiscard]] const Segment& at(int index) const { return skeleton_segments.at(index); }
+        [[nodiscard]] std::vector<Segment>& segments() { return skeleton_segments; }
+        [[nodiscard]] const std::vector<Segment>& segments() const { return skeleton_segments; }
         [[nodiscard]] int indexOf(const std::string& segment_name) const;
 
     private:
         [[nodiscard]] std::unordered_map<std::string, int> findSegmentsMappings(
-            const std::vector<chs::common::Segment>& skeleton_segments) const;
+            const std::vector<Segment>& skeleton_segments) const;
 
-        std::vector<chs::common::Segment> skeleton_segments{};
+        std::vector<Segment> skeleton_segments{};
         std::unordered_map<std::string, int> name_to_index_mappings{};
 
         void refreshWorldTransformsImpl(

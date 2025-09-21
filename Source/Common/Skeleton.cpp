@@ -20,16 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "Animations/Skeleton.h"
+#include "Common/Skeleton.h"
 
-namespace chs::anim
+namespace chs::common
 {
-    Skeleton::Skeleton(std::vector<chs::common::Segment> segments)
+    Skeleton::Skeleton(std::vector<Segment> segments)
         : skeleton_segments{std::move(segments)},
         name_to_index_mappings{findSegmentsMappings(skeleton_segments)} {}
 
     std::unordered_map<std::string, int> Skeleton::findSegmentsMappings(
-        const std::vector<chs::common::Segment>& segments) const
+        const std::vector<Segment>& segments) const
     {
         std::unordered_map<std::string, int> result_mappings{};
         for (int segment_index = 0; segment_index < segments.size(); ++segment_index)
@@ -51,7 +51,7 @@ namespace chs::anim
         const glm::mat4& parent_world_transform,
         int current_segment_index)
     {
-        chs::common::Segment& current_segment = skeleton_segments.at(current_segment_index);
+        Segment& current_segment = skeleton_segments.at(current_segment_index);
         current_segment.setWorldTransform(parent_world_transform * current_segment.localTransform());
         for (int child_segment_index : current_segment.childSegmentIndices())
         {

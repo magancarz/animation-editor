@@ -32,6 +32,40 @@ glm::mat4 TestUtils::fromVector(const glm::vec3& vector)
     return translation * rotation;
 }
 
+chs::common::Skeleton TestUtils::createSkeleton(const std::vector<SegmentEntry>& segment_entries)
+{
+    std::vector<chs::common::Segment> skeleton_segments{};
+    skeleton_segments.reserve(segment_entries.size());
+    chs::common::Segment* previous_segment = nullptr;
+    for (const auto& segment_entry : segment_entries)
+    {
+        glm::mat4 previous_segment_world_transform{1.0f};
+        if (previous_segment)
+        {
+            previous_segment->addChildSegmentIndex(skeleton_segments.size());
+            previous_segment_world_transform = previous_segment->worldTransform();
+        }
+        glm::mat4 segment_world_transform = TestUtils::fromVector(segment_entry.segment_local_location);
+        glm::mat4 segment_local_transform =
+            glm::inverse(previous_segment_world_transform) * segment_world_transform;
+        chs::common::Segment segment{segment_entry.segment_name, segment_local_transform};
+        segment.setWorldTransform(segment_world_transform);
+        previous_segment = &skeleton_segments.emplace_back(std::move(segment));
+    }
+
+    return chs::common::Skeleton{std::move(skeleton_segments)};
+}
+
+void TestUtils::expectEqual(const chs::common::Skeleton& first, const chs::common::Skeleton& second, float precision)
+{
+    EXPECT_EQ(first.size(), second.size());
+
+    for (int segment_index = 0; segment_index < first.size(); ++segment_index)
+    {
+        TestUtils::expectEqual(first.at(segment_index), second.at(segment_index), precision);
+    }
+}
+
 void TestUtils::expectEqual(const chs::common::Chain& first, const chs::common::Chain& second, float precision)
 {
     EXPECT_EQ(first.size(), second.size());

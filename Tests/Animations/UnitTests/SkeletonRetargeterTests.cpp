@@ -22,7 +22,6 @@
 
 #include <gtest/gtest.h>
 
-#include "SkeletonUtils.h"
 #include "TestUtils.h"
 #include "Animations/SkeletonRetargeter.h"
 
@@ -36,7 +35,7 @@ TEST(SkeletonRetargeterTests, ShouldRetargetTargetSkeletonFromGivenSourceSkeleto
     skeleton_segment_entries.emplace_back("spine2", glm::vec3{1, 2, 0});
     skeleton_segment_entries.emplace_back("arm0", glm::vec3{2, 2, 0});
     skeleton_segment_entries.emplace_back("arm1", glm::vec3{2, 3, 0});
-    chs::anim::Skeleton source_skeleton = SkeletonUtils::createSkeleton(skeleton_segment_entries);
+    chs::common::Skeleton source_skeleton = TestUtils::createSkeleton(skeleton_segment_entries);
 
     skeleton_segment_entries.clear();
     skeleton_segment_entries.emplace_back("spine0", glm::vec3{1, 0, 0});
@@ -44,7 +43,7 @@ TEST(SkeletonRetargeterTests, ShouldRetargetTargetSkeletonFromGivenSourceSkeleto
     skeleton_segment_entries.emplace_back("spine2", glm::vec3{3, 0, 0});
     skeleton_segment_entries.emplace_back("arm0", glm::vec3{4, 0, 0});
     skeleton_segment_entries.emplace_back("arm1", glm::vec3{5, 0, 0});
-    chs::anim::Skeleton target_skeleton = SkeletonUtils::createSkeleton(skeleton_segment_entries);
+    chs::common::Skeleton target_skeleton = TestUtils::createSkeleton(skeleton_segment_entries);
 
     std::vector<chs::anim::ChainMapping> chain_mappings{};
     chain_mappings.emplace_back("spine0", "spine2", "spine0", "spine2");
@@ -57,5 +56,5 @@ TEST(SkeletonRetargeterTests, ShouldRetargetTargetSkeletonFromGivenSourceSkeleto
     skeleton_retargeter.retarget(source_skeleton, target_skeleton);
 
     // then
-    SkeletonUtils::expectEqual(source_skeleton, target_skeleton);
+    TestUtils::expectEqual(source_skeleton, target_skeleton);
 }
