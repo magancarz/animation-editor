@@ -36,9 +36,11 @@ namespace chs::common
 
         Skeleton() = default;
         explicit Skeleton(std::vector<Segment> segments);
+        Skeleton(std::string name, std::vector<Segment> segments);
 
         void refreshWorldTransforms();
 
+        [[nodiscard]] const std::string& name() const { return skeleton_name; }
         [[nodiscard]] bool empty() const { return skeleton_segments.empty(); }
         [[nodiscard]] int size() const { return static_cast<int>(skeleton_segments.size()); }
         [[nodiscard]] Segment& at(int index) { return skeleton_segments.at(index); }
@@ -51,6 +53,7 @@ namespace chs::common
         [[nodiscard]] std::unordered_map<std::string, int> findSegmentsMappings(
             const std::vector<Segment>& skeleton_segments) const;
 
+        std::string skeleton_name{};
         std::vector<Segment> skeleton_segments{};
         std::unordered_map<std::string, int> name_to_index_mappings{};
 

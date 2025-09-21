@@ -45,6 +45,7 @@ namespace chs::common
         Segment& operator=(Segment&&) noexcept = default;
 
         void addChildSegmentIndex(int child_segment_index);
+        void setName(const std::string& name);
         void setWorldTransform(const glm::mat4& transform);
         void setLocalTransform(const glm::mat4& transform);
 

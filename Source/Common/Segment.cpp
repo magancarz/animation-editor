@@ -35,6 +35,11 @@ namespace chs::common
         child_segments_indices.emplace_back(child_segment_index);
     }
 
+    void Segment::setName(const std::string& name)
+    {
+        segment_name = std::move(name);
+    }
+
     void Segment::setWorldTransform(const glm::mat4& transform)
     {
         world_transform = transform;

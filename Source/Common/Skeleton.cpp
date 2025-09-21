@@ -28,6 +28,11 @@ namespace chs::common
         : skeleton_segments{std::move(segments)},
         name_to_index_mappings{findSegmentsMappings(skeleton_segments)} {}
 
+    Skeleton::Skeleton(std::string name, std::vector<Segment> segments)
+        : skeleton_name{std::move(name)},
+        skeleton_segments{std::move(segments)},
+        name_to_index_mappings{findSegmentsMappings(skeleton_segments)} {}
+
     std::unordered_map<std::string, int> Skeleton::findSegmentsMappings(
         const std::vector<Segment>& segments) const
     {

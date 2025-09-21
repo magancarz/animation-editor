@@ -31,6 +31,14 @@ add_library(chaos-animations-common STATIC ${CHAOS_ANIMATIONS_COMMON_SOURCES})
 target_include_directories(chaos-animations-common PUBLIC Include)
 target_link_libraries(chaos-animations-common glm::glm)
 
+file(GLOB_RECURSE CHAOS_ANIMATIONS_ASSETS_SOURCES Source/Assets/*.cpp)
+add_library(chaos-animations-assets STATIC ${CHAOS_ANIMATIONS_ASSETS_SOURCES})
+target_include_directories(chaos-animations-assets PUBLIC Include)
+target_include_directories(chaos-animations-assets PUBLIC ThirdParty/assimp/include)
+target_link_libraries(chaos-animations-assets
+    chaos-animations-common
+    assimp)
+
 file(GLOB_RECURSE CHAOS_IK_SOURCES Source/InverseKinematics/*.cpp)
 add_library(chaos-inverse-kinematics STATIC ${CHAOS_IK_SOURCES})
 target_include_directories(chaos-inverse-kinematics PUBLIC Include)
@@ -44,3 +52,4 @@ target_link_libraries(chaos-animations chaos-animations-common)
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 
 add_subdirectory(Tests)
+add_subdirectory(Application)
