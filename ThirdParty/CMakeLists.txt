@@ -20,5 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+set(BUILD_SHARED_LIBS OFF CACHED)
+set(ASSIMP_INSTALL OFF CACHED)
+
+add_subdirectory(assimp)
+
 add_subdirectory(glm)
 add_subdirectory(googletest)
